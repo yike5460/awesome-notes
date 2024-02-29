@@ -1,3 +1,4 @@
+# Quick Start (simple & manual)
 ## Install Kohya
 
 Install conda or venv to create a virtual environment for better package management. Refer to offcial [Kohya document](https://github.com/bmaltais/kohya_ss?tab=readme-ov-file#linux-pre-requirements) for more details.
@@ -159,15 +160,5 @@ Check the tusiji styled images in the output to see if our LoRA model take effec
 
 <img width="2508" alt="image" src="https://github.com/yike5460/just_notes/assets/23544182/769d2c07-1aec-4fa0-9cdf-5b3816e31829">
 
-
-
-
-
-
-
-
-
-
-
-
-``
+# Advanced exploration (more details & automation)
+Refer to https://civitai.com/models/22530 to go though the detail of the LoRA model and its training process with boilerplate colab notebook. And there are [official Kohya document](https://github.com/bmaltais/kohya_ss/blob/master/docs/train_README-zh.md) to guide you on the whole training process.
