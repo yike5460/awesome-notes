@@ -162,3 +162,5 @@ Check the tusiji styled images in the output to see if our LoRA model take effec
 
 # Advanced exploration (more details & automation)
 Refer to https://civitai.com/models/22530 to go though the detail of the LoRA model and its training process with boilerplate colab notebook. And there are [official Kohya document](https://github.com/bmaltais/kohya_ss/blob/master/docs/train_README-zh.md) to guide you on the whole training process.
+
+And there are pre-build notebook in colab to automate the whole LoRA training process with seamless integration with Google drive, including dataset preparation, model training, model evaluation etc. You can refer to [Trainer](https://colab.research.google.com/github/hollowstrawberry/kohya-colab/blob/main/Lora_Trainer.ipynb) and [Dataset Maker](https://colab.research.google.com/github/hollowstrawberry/kohya-colab/blob/main/Dataset_Maker.ipyn).
