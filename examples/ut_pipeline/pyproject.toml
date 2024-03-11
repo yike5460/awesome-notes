@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "ut_sample"
+version = "0.0.1"
+description = "Sample project to demonstrate how to use build Unit Test pipeline"
+authors = []
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/yike5460/justNotes.git"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0"
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.1.5"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests/unit_tests",
+    "tests/integration_tests",
+]
+addopts = "-ra -q"
+
+[tool.ruff]
+exclude = []
+
+[tool.ruff.lint]
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "T201", # print
+]
+
+[tool.mypy]
+ignore_missing_imports = "True"
+disallow_untyped_defs = "True"
+exclude = ["notebooks", "examples", "example_data"]
+
+[tool.coverage.run]
+omit = []
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
