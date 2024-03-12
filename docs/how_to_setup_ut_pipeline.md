@@ -5,46 +5,16 @@ Full unit test pipeline with full fledged script or code for Python using makefi
 .
 ├── Makefile
 ├── README.md
-├── langchain_community
-│ ├── init.py
-│ ├── pycache
-│ ├── adapters
-│ ├── agent_toolkits
-│ ├── cache.py
-│ ├── callbacks
-│ ├── chat_loaders
-│ ├── chat_message_histories
-│ ├── chat_models
-│ ├── docstore
-│ ├── document_compressors
-│ ├── document_loaders
-│ ├── document_transformers
-│ ├── embeddings
-│ ├── example_selectors
-│ ├── graphs
-│ ├── indexes
-│ ├── llms
-│ ├── output_parsers
-│ ├── py.typed
-│ ├── retrievers
-│ ├── storage
-│ ├── tools
-│ ├── utilities
-│ ├── utils
-│ └── vectorstores
+├── image
+│   └── ruff.png
 ├── poetry.lock
 ├── pyproject.toml
-├── scripts
-│ ├── check_imports.py
-│ ├── check_pydantic.sh
-│ └── lint_imports.sh
-└── tests
-├── init.py
-├── pycache
-├── data.py
-├── examples
-├── integration_tests
-└── unit_tests
+├── test
+│   ├── integration_tests
+│   └── unit_tests
+└── ut_sample
+    ├── __init__.py
+    └── messy_code.py
 ```
 
 To create a full unit test pipeline for your Python project using Makefile, Poetry, and Pytest, follow these steps:
@@ -61,16 +31,22 @@ Here's an example setup for your project:
 
 ```toml
 [tool.poetry]
-name = "langchain_community"
-version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+name = "ut_sample"
+version = "0.0.1"
+description = "Sample project to demonstrate how to use build Unit Test pipeline"
+authors = []
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/yike5460/justNotes.git"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.1.5"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -79,6 +55,25 @@ testpaths = [
     "tests/integration_tests",
 ]
 addopts = "-ra -q"
+
+[tool.ruff]
+exclude = []
+
+[tool.ruff.lint]
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "T201", # print
+]
+
+[tool.mypy]
+ignore_missing_imports = "True"
+disallow_untyped_defs = "True"
+exclude = ["notebooks", "examples", "example_data"]
+
+[tool.coverage.run]
+omit = []
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -90,14 +85,17 @@ build-backend = "poetry.core.masonry.api"
 ```makefile
 .PHONY: format lint test
 
+PYTHON_FILES=.
+
 format:
 	@echo "Formatting code"
-	poetry run black langchain_community tests
+	poetry run ruff format $(PYTHON_FILES)
+	poetry run ruff --select I --fix $(PYTHON_FILES)
 
 lint:
 	@echo "Linting code"
-	poetry run flake8 langchain_community tests
-	poetry run mypy langchain_community tests
+	poetry run flake8 ut_sample tests
+	poetry run mypy ut_sample tests
 	@echo "Checking for proper imports"
 	./scripts/check_imports.py
 	./scripts/lint_imports.sh
@@ -125,6 +123,10 @@ To format your code, you can run:
 ```bash
 make format
 ```
+
+## ruff sample output
+
+[ruff](../examples/ut_pipeline/image/ruff.png)
 
 To lint your code, you can run:
 
