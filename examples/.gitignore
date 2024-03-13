@@ -1,1 +1,5 @@
 .env
+coverage.xml
+coverage
+.coverage
+__pycache__

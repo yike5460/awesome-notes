@@ -5,7 +5,7 @@ TEST_FILE ?= tests/unit_tests/
 integration_tests: TEST_FILE = tests/integration_tests/
 
 # Run unit tests and generate a coverage report.
-coverage:
+coverage coverage_integration_tests:
 	poetry run pytest --cov \
 		--cov-config=.coveragerc \
 		--cov-report xml \
@@ -31,4 +31,31 @@ test tests integration_tests:
 	@echo "Running unit tests && integration_tests"
 	poetry run pytest $(TEST_FILE)
 
+test_watch:
+	poetry run ptw --snapshot-update --now . -- -vv -x tests/unit_tests
+
 # Additional targets for setting up the environment, cleaning build artifacts, etc.
+clean:
+	@echo "Cleaning up build artifacts"
+	rm -rf .mypy_cache
+	rm -rf .pytest_cache
+	rm -rf .coverage
+	rm -rf coverage.xml
+	rm -rf htmlcov
+	rm -rf .ruff_cache
+	rm -rf .ruff
+	rm -rf .ruff.lock
+	rm -rf .ruff.toml
+	rm -rf tests/unit_tests/__pycache__
+	rm -rf tests/integration_tests/__pycache__
+
+help:
+	@echo '----'
+	@echo 'format                       - run code formatters'
+	@echo 'lint                         - run linters'
+	@echo 'test                         - run unit tests'
+	@echo 'tests                        - run unit tests'
+	@echo 'test TEST_FILE=<test_file>   - run all tests in file'
+	@echo 'test_watch                   - run unit tests in watch mode'
+	@echo 'coverage                     - run unit tests and generate a coverage report'
+	@echo 'clean                        - clean up build artifacts'

@@ -14,7 +14,7 @@ API_KEY = os.getenv('GOOGLE_API_KEY')
 CSE_ID = os.getenv('GOOGLE_CSE_ID')
 
 # Set up logging to output to current stdout for debugging
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Use such function to further remove duplicated images since we keep to see redundant images been downloaded even turn on the official API filter
