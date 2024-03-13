@@ -1,0 +1,6 @@
+# Train your first BERT model
+Bert model as used as lightweight and efficient text classification model in use cases such as sentiment analysis, spam detection, and more. For customer who want to implement LLM with RAG, BERT can be used in the first stage to indentify the user intention (e.g. casual chat, harmful request, common knowledge query, professional query) and route to different operation path accordingly, instead of invoking the LLM directly which can be expensive and slow. One of the essential steps to use BERT is to train the model with your own dataset and the quaility of dataset labeling or annotation is crucial to the model accuracy. We will first skip the detailed data preparation and annotation part and focus on the model training and fine tuning, then we will tried to use Claude3's multi-modal ability to futher improve the dataset labeling and annotation process.
+
+## Choose the base pre-trained model
+
+Refer to [AWS built-in algorithm](https://sagemaker.readthedocs.io/en/stable/algorithms/text/text_classification_tensorflow.html) for the list of pre-trained text classficication models.
