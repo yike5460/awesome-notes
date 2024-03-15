@@ -122,7 +122,7 @@ if __name__ == "__main__":
         img_color_type=img_color_type,
         img_dominant_color=img_dominant_color,
         rights=rights,
-        num=10 # Number of results to return (max 10 per request)
+        num=50 # Number of results to return (max 50 per request)
     )
 
     # Extract image URLs
