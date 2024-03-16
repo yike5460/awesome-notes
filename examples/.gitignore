@@ -3,3 +3,5 @@ coverage.xml
 coverage
 .coverage
 __pycache__
+downloaded_images
+sample_models
