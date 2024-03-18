@@ -5,6 +5,12 @@ import imagehash
 import logging
 from PIL import Image
 from googleapiclient.discovery import build
+
+import torch
+from PIL import Image
+from sklearn.metrics.pairwise import cosine_similarity
+import clip
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,7 +21,55 @@ CSE_ID = os.getenv('GOOGLE_CSE_ID')
 
 # Set up logging to output to current stdout for debugging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+def is_duplicate(image_directory, threshold=0.9):
+    # Load the CLIP model
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model, preprocess = clip.load("ViT-B/32", device=device)
+
+    # Dictionary to store image embeddings
+    embeddings = {}
+    # List to keep track of pairs of duplicate images
+    duplicate_pairs = []
+
+    # Function to preprocess and get embedding from an image
+    def get_embedding(image_path, preprocess, model):
+        with Image.open(image_path) as image:
+            logger.info(f"Preprocessing {image_path}")
+            image_tensor = preprocess(image).unsqueeze(0).to(device)
+            logger.info(f"Getting embedding for {image_path}")
+            with torch.no_grad():
+                embedding = model.encode_image(image_tensor)
+                logger.info(f"Embedding for {image_path}: {embedding}")
+            return embedding.cpu().numpy()
+
+    # Iterate over all the images in the directory
+    for image_filename in os.listdir(image_directory):
+        if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            image_path = os.path.join(image_directory, image_filename)
+            logger.info(f"Processing {image_path}")
+            try:
+                # Get the embedding of the current image
+                logger.info(f"Getting embedding for {image_path}")
+                current_embedding = get_embedding(image_path, preprocess, model)
+                logger.info(f"Embedding for {image_path}: {current_embedding}")
+                # Compare the embedding with the embeddings of previous images
+                for prev_image_path, prev_embedding in embeddings.items():
+                    logger.info(f"Comparing with {prev_image_path}")
+                    similarity = cosine_similarity(current_embedding, prev_embedding)
+                    # If the similarity is above the threshold, it's a potential duplicate
+                    if similarity >= threshold:
+                        logger.info(f"Duplicate found: {image_path} and {prev_image_path}")
+                        duplicate_pairs.append((image_path, prev_image_path))
+                        break
+                else:
+                    # No duplicate found, add the image embedding to the dictionary
+                    embeddings[image_path] = current_embedding
+            except IOError as e:
+                logger.error(f"Error processing image {image_path}: {e}")
+
+    return duplicate_pairs
 
 # Use such function to further remove duplicated images since we keep to see redundant images been downloaded even turn on the official API filter
 def remove_redundant_images(image_directory, threshold=5):
@@ -68,20 +122,24 @@ def is_blurry(image_path, threshold=100.0):
 def google_search(search_term, api_key, cse_id, img_size="medium", img_type="photo", img_color_type="color", img_dominant_color=None, rights=None, **kwargs):
     service = build("customsearch", "v1", developerKey=api_key)
     # More schema refer to https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
-    res = service.cse().list(
-        q=search_term, 
-        cx=cse_id, 
-        searchType='image', 
-        imgSize=img_size, 
-        imgType=img_type, 
-        imgColorType=img_color_type, 
-        imgDominantColor=img_dominant_color, 
-        rights=rights,
-        filter='1', # Turns on duplicate content filter
-        c2coff='1', # Enables Simplified and Traditional Chinese Search.
-        **kwargs
-    ).execute()
-    return res['items']
+    try:
+        res = service.cse().list(
+            q=search_term,
+            cx=cse_id,
+            searchType='image',
+            imgSize=img_size,
+            imgType=img_type,
+            imgColorType=img_color_type,
+            imgDominantColor=img_dominant_color,
+            rights=rights,
+            filter='1', # Turns on duplicate content filter
+            c2coff='1', # Enables Simplified and Traditional Chinese Search.
+            **kwargs
+        ).execute()
+        return res['items']
+    except Exception as e:
+        logger.error(f"An error occurred during the search: {e}")
+        return []
 
 # Function to download images given a list of URLs
 def download_images(image_urls, save_folder):
@@ -106,8 +164,8 @@ search_label = input("Enter the label (e.g., 'jeff bezos', 'taylor swift'): ")
 img_size = input("Enter the image size (e.g., 'small', 'medium', 'large', 'xlarge'): ").upper()
 img_type = input("Enter the image type (e.g., 'face', 'photo', 'clipart', 'lineart'): ")
 img_color_type = input("Enter the image color type (e.g., 'color', 'gray', 'mono', 'trans'): ").strip() or 'color'
-img_dominant_color = input("Enter the image dominant color (e.g., 'black', 'blue', 'brown', 'gray'): ").strip() or None
-rights = input("Enter the license type (e.g., 'cc_publicdomain', 'cc_attribute', 'cc_sharealike', 'cc_noncommercial', 'cc_nonderived'): ").strip() or None
+img_dominant_color = input("Enter the image dominant color (e.g., 'black', 'blue', 'brown', 'gray'): ").strip() or 'white'
+rights = input("Enter the license type (e.g., 'cc_publicdomain', 'cc_attribute', 'cc_sharealike', 'cc_noncommercial', 'cc_nonderived'): ").strip() or 'cc_publicdomain'
 
 # Main code entry point
 if __name__ == "__main__":
@@ -132,5 +190,6 @@ if __name__ == "__main__":
     download_images(image_urls, 'downloaded_images')
     logger.info("Download completed.")
 
+    # is_duplicate('downloaded_images')
     remove_redundant_images('downloaded_images')
     logger.info("Redundant images removed.")
