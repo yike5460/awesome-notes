@@ -49,6 +49,9 @@ producer_thread.join()
 consumer_thread.join()
 ```
 
+## Lock (Python)
+
+
 ## Async/Await (TypeScript)
 Async/Await is a feature in TypeScript that allows you to write asynchronous code that looks synchronous. It is built on top of promises and generators, or syntactic sugar for promise, and it provides a more readable and maintainable way to write asynchronous code. The async keyword is used to define an asynchronous function, and the await keyword is used to wait for a promise to be resolved. The overall workflow is as follows:
 1. an async function is defined using the async keyword
