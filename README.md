@@ -34,6 +34,12 @@
 ### Claude
 - [Read more about Claude](docs/take_a_look_on_claude.md)
 
+## CUDA
+
+## Parallel Programming 
+### C++
+### Python
+
 ## Contributing
 
 ## License
