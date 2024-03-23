@@ -19,5 +19,9 @@ Brief introduction of the auto prompt engineering in Claude3, the auto prompt en
 + Annotate generations with human feedback or do nothing if no
 + Input the feedback to Claude3 to re-write the prompt
 + Do the process iteratively until the prompt is satisfactory
+![image](https://github.com/yike5460/justNotes/assets/23544182/ef25c044-4512-4953-8eef-dce4aedaff48)
 
 Run the [sample code](../examples/Claude3/autoPE/autoPE.py) in to see the auto prompt engineering in action.
+![image](https://github.com/yike5460/justNotes/assets/23544182/96425b74-8791-49b7-9c6d-cfc3d606b41c)
+![image](https://github.com/yike5460/justNotes/assets/23544182/e24c86ef-4c42-4797-a956-38dd78e09f30)
+
