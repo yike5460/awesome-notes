@@ -32,7 +32,7 @@
 - [Read more about Bert](docs/train_your_first_bert.md)
 
 ### Claude
-- [Read more about Claude](docs/take_a_look_on_claude.md)
+- [Read more about Claude](docs/take_a_look_on_claude3.md)
 
 ## CUDA
 
