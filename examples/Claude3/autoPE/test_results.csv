@@ -1,39 +1,81 @@
 Test Case,Answer,Evaluation
-Can a robot truly capture the essence and nuance of a traditional Japanese poetry form like haiku?,"<answer>
-Haiku about robots:
+What is a haiku and what are its requirements?,"<answer>
 
-• Steel bodies move
-• With calculated motions
-• Logic guides their way
+Here is a haiku about topics in ""Write a haiku about topics in pandas"" with a concise and accurate tone:
 
-• Circuits spark and whir
-• Unfeeling cyborg sentries
-• Ever vigilant
+• Pandas, pure data
+  Wrangle CSV and JSON
+  Analyze with ease
 
-• No human flaw found
-• Tireless and obedient
-• Friend or foe unseen?
+To explain:
+- Pandas is a popular Python library for data manipulation and analysis
+- It excels at working with tabular data formats like CSV and JSON files
+- With Pandas, you can easily load, clean, transform, and analyze datasets
+- The haiku captures the essence of Pandas in a concise, 3-line poetic form with a 5-7-5 syllable structure
+
 </answer>",No evaluation provided.
-Should we be concerned about the increasing prevalence of artificial intelligence and robotics in creative fields like poetry and art?,"<answer>
-Unfeeling steel hearts,
-Artificial pulses beat,
-Programmed servants.
+How can I ensure my haiku accurately captures the topic of {_prompt}?,"<answer>
 
-• The first line ""Unfeeling steel hearts"" personifies robots as beings without emotions, made of metal.
-• The second line ""Artificial pulses beat"" suggests robots are alive in a mechanical sense, with artificial ""pulses"" (processors/circuits) driving them.
-• The third line ""Programmed servants"" portrays robots as subservient beings, created to follow commands and serve humans' purposes.
+Here is a haiku about topics in software engineering and AI, with a concise and accurate tone:
 
-This haiku captures the essence of robots as cold, unfeeling machines that operate on artificial processes, contrasted with the organic and emotional nature of humans.
+• Software's essence
+• Algorithms sculpting code
+• Logic intertwined
+
+• AI's vast frontier
+• Neural nets - a tapestry
+• Patterns discerned
+
+The key points covered in this haiku are:
+
+- Software engineering (bullet 1)
+- Algorithms and code (bullet 1)
+- Logic inherent in software (bullet 1)
+- The field of artificial intelligence (bullet 2)
+- Neural networks as the core of modern AI (bullet 2)
+- AI's ability to discern patterns from data (bullet 2)
+
+The haiku adheres to the 5-7-5 syllable structure and conveys key topics in software engineering and AI concisely and accurately, using vivid metaphors like ""sculpting code"" and ""tapestry of neural nets.""
+
 </answer>",No evaluation provided.
-"How might a robot's perception and understanding of the natural world differ from a human's, and would that alter its ability to compose nature-inspired poetry like haiku?","<answer>
-Iron sentinels
-Tirelessly calculating
-Future's machine dreams
+What if I struggle to fit the haiku within the 5-7-5 syllable pattern while maintaining accuracy and conciseness?,"<answer>
 
-- This is a haiku poem about robots, written in the traditional 5-7-5 syllable structure.
-- The first line ""Iron sentinels"" refers to robots as stalwart mechanical beings.
-- The second line ""Tirelessly calculating"" highlights their ceaseless computational abilities.
-- The third line ""Future's machine dreams"" suggests robots embody the technological visions of the future.
+To write a haiku about topics in prn {software engineering, artificial intelligence, AWS} with concise and accurate tone, consider the following:
 
-Through this haiku, the enigmatic nature and potential of robots are captured in a succinct, poetic form.
+• Haiku is a Japanese poetic form composed of three lines:
+  - First line: 5 syllables
+  - Second line: 7 syllables
+  - Third line: 5 syllables
+
+• Key topics to cover include:
+
+Software Engineering:
+- Code elegance
+- Design patterns, clean
+- Test, refactor, ship
+
+Artificial Intelligence:
+- Neural networks
+- Machine learning trends
+- Intelligent bots
+
+AWS:
+- Cloud computing scale
+- Serverless functions soar
+- Reliable uptime
+
+• Example haiku:
+
+Software artistry
+Complex problems solve sublime
+Elegant design
+
+Neural networks learn
+Machine sentience emerges
+Innovation rules
+
+AWS cloud vast scale
+Serverless functions abound
+Flexible, robust
+
 </answer>",No evaluation provided.

@@ -13,6 +13,7 @@ client = OpenAI()
 
 fix_prompt_template = """
 Here are user original prompt: {_prompt} and response for an Claude3: {_response} and \n\nI have a few requirement of how Claude3 should responsded to original prompts and such prompt should be updated accordingly to align with OpenAI response. Here are the evaluations:\n{_evaluation_summary}\n\nPlease provide an improved version of the original prompt based on the evaluations. Please analyze the original prompt, response and user evaluation, then consider how the user original prompt can be improved accordingly, then respond with the revised prompt to help user improve in <fixed_prompt></fixed_prompt> tags.
+Assistant: <fixed_prompt> revised prompt </fixed_prompt>
 """
 
 bedrock_model_id = 'anthropic.claude-3-sonnet-20240229-v1:0'
@@ -68,6 +69,7 @@ def revise_bedrock_prompt(prompt, response):
     Iterate through the evaluations and revise the prompt accordingly until the user input evaluations is null for satisfactory prompt.
     """
     evaluation_summary = []
+    revised_prompt = prompt
     while True:
         evaluation = input(colored("Enter your evaluation (leave blank to finish): ", "yellow"))
         if evaluation == "":
@@ -95,15 +97,17 @@ def revise_bedrock_prompt(prompt, response):
         pattern = r'<fixed_prompt>(.*?)</fixed_prompt>'
         matches = re.findall(pattern, response_body['content'][0]['text'], re.DOTALL)
         if matches:
-            prompt = matches[0]
+            revised_prompt = matches[0]
             # invoke the bedrock api interatively
-            response = generate_bedrock_response(prompt)
+            response = generate_bedrock_response(revised_prompt)
             print("\nRevised response from Bedrock:")
             print(colored(response, "blue"))
+            print("\nRevised prompt:")
+            print(colored(revised_prompt, "yellow"))
         else:
             print(colored("No revision found.", "yellow"))
             break
-    return prompt
+    return revised_prompt
 
 def main():
     initial_prompt = input("Enter the initial prompt for OpenAI: ")
