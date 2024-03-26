@@ -12,8 +12,24 @@ bedrock_runtime = boto3.client(service_name='bedrock-runtime', region_name="us-e
 client = OpenAI()
 
 fix_prompt_template = """
-Here are user original prompt: {_prompt} and response for an Claude3: {_response} and \n\nI have a few requirement of how Claude3 should responsded to original prompts and such prompt should be updated accordingly to align with OpenAI response. Here are the evaluations:\n{_evaluation_summary}\n\nPlease provide an improved version of the original prompt based on the evaluations. Please analyze the original prompt, response and user evaluation, then consider how the user original prompt can be improved accordingly, then respond with the revised prompt to help user improve in <fixed_prompt></fixed_prompt> tags.
-Assistant: <fixed_prompt> revised prompt </fixed_prompt>
+You will be given a prompt + response from an Claude3 + human evaluation to revise the prompt.
+
+Here are the user original prompt: 
+<prompt>
+{{_prompt}}
+</prompt>
+
+Here are the Claude3’s response:
+<response>
+{{_response}}
+</response>
+
+Assess whether Claude3 responsded to original prompts in alignment OpenAI response according to the human evaluations below:
+<evaluation_summary>
+{{_evaluation_summary}}
+</evaluation_summary>
+
+Please provide an improved version of the original prompt based on the evaluations. First analyze the original prompt, response and user evaluation, then consider how the user original prompt can be improved accordingly, then respond with the revised prompt in <revised_prompt></revised_prompt> tags.
 """
 
 bedrock_model_id = 'anthropic.claude-3-sonnet-20240229-v1:0'
@@ -94,7 +110,9 @@ def revise_bedrock_prompt(prompt, response):
         })
         response = bedrock_runtime.invoke_model(body=body, modelId=bedrock_model_id)
         response_body = json.loads(response.get('body').read())
-        pattern = r'<fixed_prompt>(.*?)</fixed_prompt>'
+        print("\nResponse from Bedrock after revision: ")
+        print(colored(response_body['content'][0]['text'], "blue"))
+        pattern = r'<revised_prompt>(.*?)</revised_prompt>'
         matches = re.findall(pattern, response_body['content'][0]['text'], re.DOTALL)
         if matches:
             revised_prompt = matches[0]
