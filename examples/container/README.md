@@ -21,3 +21,21 @@
 
 5. Provisioner consolidation:
 - Karpenter's NodePool replaces the previous Provisioner, Machine, and AWSNodeTemplate resources, streamlining the APIs around the single concept of a node.
+
+## Install [eksdemo](https://github.com/awslabs/eksdemo?tab=readme-ov-file#install-manually) for prototype
+
+And knowing the the differences between eksdemo and eksctl is also important since we will use them interchangeably but for different purposes.
+**Purpose:**
+- eksctl is a CLI tool for creating and managing Amazon EKS clusters, it helps you easily create EKS clusters with options to customize the configuration.
+- eksdemo is an easy button for learning, testing and demoing Amazon EKS. It is designed to quickly get you up and running with EKS for learning and experimentation purposes.
+**Use cases:**
+- eksctl is used for creating production-ready EKS clusters and managing them over time. It provides extensive configuration options suitable for real-world deployments.
+- eksdemo is meant for iterative testing, learning EKS concepts, and giving demos. It prioritizes simplicity and getting a cluster running quickly over production-readiness.
+**Approach:**
+- eksctl uses a declarative Infrastructure as Code (IaC) approach built on tools like CloudFormation, Terraform or CDK. You define the desired cluster state and eksctl provisions it. 
+- eksdemo takes an imperative approach with a kubectl-like CLI that installs apps and dependencies with simple commands. It is designed for fast iteration rather than defining declarative configuration.
+**Scope:**
+- eksctl allows detailed configuration of the EKS cluster, nodegroups, and add-ons through CLI flags and configuration file. It supports advanced customization and is a general purpose tool for EKS cluster management, from creation to deletion with full lifecycle support.
+- eksdemo comes with a predefined application catalog that can be installed with single commands. It focuses on ease-of-use over deep customization and has a narrower scope focused on learning, testing and demoing EKS features and add-ons without full EKS management capabilities.
+
+

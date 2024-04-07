@@ -1,3 +1,4 @@
+# Check the GitHub repository (https://github.com/aws-samples/claude-prompt-generator) for the latest implementation with Gradio UI
 import re
 from dotenv import load_dotenv
 import boto3
@@ -12,24 +13,25 @@ bedrock_runtime = boto3.client(service_name='bedrock-runtime', region_name="us-e
 client = OpenAI()
 
 fix_prompt_template = """
-You will be given a prompt + response from an Claude3 + human evaluation to revise the prompt.
+Human:
+You will be given a prompt + answer from an Claude3 + human evaluation to revise the prompt.
 
 Here are the user original prompt: 
 <prompt>
-{{_prompt}}
+{_prompt}
 </prompt>
 
-Here are the Claude3’s response:
-<response>
-{{_response}}
-</response>
+Here are the Claude3’s answer:
+<answer>
+{_answer}
+</answer>
 
-Assess whether Claude3 responsded to original prompts in alignment OpenAI response according to the human evaluations below:
+Below are human evaluations for the original prompt and answer:
 <evaluation_summary>
-{{_evaluation_summary}}
+{_evaluation_summary}
 </evaluation_summary>
 
-Please provide an improved version of the original prompt based on the evaluations. First analyze the original prompt, response and user evaluation, then consider how the user original prompt can be improved accordingly, then respond with the revised prompt in <revised_prompt></revised_prompt> tags.
+Please provide an improved version of the original prompt based on the evaluations. First analyze the original prompt, answer and human evaluation, then consider how the original prompt can be improved accordingly, then respond with the revised prompt in <revised_prompt></revised_prompt> tags.
 """
 
 bedrock_model_id = 'anthropic.claude-3-sonnet-20240229-v1:0'
@@ -98,7 +100,7 @@ def revise_bedrock_prompt(prompt, response):
             "content": [
                 {"type": "text",
                 # Note the prompt will be overwrite as the iteration start, each evaluation will consider the new revised prompt, but the evaluation will be stored continuouly.
-                "text": fix_prompt_template.format(_prompt=prompt, _response=response, _evaluation_summary=evaluation_summary)}
+                "text": fix_prompt_template.format(_prompt=revised_prompt, _response=response, _evaluation_summary=evaluation_summary)}
             ]
         }
         messages = [message]
