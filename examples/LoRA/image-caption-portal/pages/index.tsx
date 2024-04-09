@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import ImageUploader from '../components/ImageUploader';
 import ImageCaption from '../components/ImageCaption';
+import { HTMLSketleton } from '../components/Html';
 import { generateCaption } from '../api';
 
 export default function Home() {
@@ -17,6 +18,8 @@ export default function Home() {
       <h1 className="text-2xl font-bold mb-4">Image Caption Generator</h1>
       <ImageUploader onImageUpload={handleImageUpload} />
       {caption && <ImageCaption caption={caption} />}
+
+      <HTMLSketleton />
     </div>
   );
 }
