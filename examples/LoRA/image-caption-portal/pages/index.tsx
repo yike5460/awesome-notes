@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import ImageUploader from '../components/ImageUploader';
 import ImageCaption from '../components/ImageCaption';
-import { HTMLSketleton } from '../components/Html';
+import { HTMLSketleton } from '../components/HTML';
 import { generateCaption } from '../api';
 
 export default function Home() {
