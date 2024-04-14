@@ -117,31 +117,31 @@ console.log(response.Instances[0].InstanceId);
 
 ### Detailed Steps
 
-1. Set up a Kubernetes cluster using a managed service like Amazon EKS or a self-managed cluster on EC2 spot instances to reduce costs compared to on-demand instances.[11]
+1. Set up a Kubernetes cluster using a managed service like Amazon EKS or a self-managed cluster on EC2 spot instances to reduce costs compared to on-demand instances.
 
-2. Install cert-manager on the cluster to manage TLS certificates for ARC.[8]
+2. Install cert-manager on the cluster to manage TLS certificates for ARC.
 
-3. Install actions-runner-controller (ARC) on the cluster using Helm.[5] This will manage the lifecycle of the runner pods.
+3. Install actions-runner-controller (ARC) on the cluster using Helm. This will manage the lifecycle of the runner pods.
 
-4. Configure ARC to use the new "RunnerSets" CRD which enables autoscaling of runners based on job demand.[9] Specify min/max replicas and scale-down delays.
+4. Configure ARC to use the new "RunnerSets" CRD which enables autoscaling of runners based on job demand. Specify min/max replicas and scale-down delays.
 
-5. Create a container image for the runner that includes any required dependencies like Docker, Java, etc. Use multi-stage builds to minimize image size.[10]
+5. Create a container image for the runner that includes any required dependencies like Docker, Java, etc. Use multi-stage builds to minimize image size.
 
-6. Configure the runner image to disable automatic updates to have control over when new versions are deployed.[16]
+6. Configure the runner image to disable automatic updates to have control over when new versions are deployed.
 
 7. Deploy the runner image to a container registry like Amazon ECR that the cluster has access to pull from.
 
-8. Create a "RunnerDeployment" manifest to instruct ARC to provision runner pods using the custom container image.[4]
+8. Create a "RunnerDeployment" manifest to instruct ARC to provision runner pods using the custom container image
 
-9. Set up a cache server like Redis in the cluster to persist the runner's package and build caches across pods.[12] Configure this in the runner deployment.
+9. Set up a cache server like Redis in the cluster to persist the runner's package and build caches across pods. Configure this in the runner deployment.
 
-10. Configure your GitHub Actions workflows to use the self-hosted runners by specifying the labels defined on the runner deployment.[4]
+10. Configure your GitHub Actions workflows to use the self-hosted runners by specifying the labels defined on the runner deployment.
 
-11. Set up monitoring and alerts on key metrics like job queue time, runner utilization, and cache hit rates to help guide scaling decisions.[14]
+11. Set up monitoring and alerts on key metrics like job queue time, runner utilization, and cache hit rates to help guide scaling decisions.
 
-12. Implement a system to clean up orphaned runners that are no longer needed by ARC due to scale-in events to avoid hitting registration limits.[6]
+12. Implement a system to clean up orphaned runners that are no longer needed by ARC due to scale-in events to avoid hitting registration limits.
 
-By leveraging Kubernetes and the actions-runner-controller, you can achieve a scalable and cost-effective solution for hosting GitHub runners compared to statically provisioned EC2 instances. The ability to automatically scale the runners and use spot instances for the worker nodes provides flexibility in resource management and helps optimize costs.[1][2][11]
+By leveraging Kubernetes and the actions-runner-controller, you can achieve a scalable and cost-effective solution for hosting GitHub runners compared to statically provisioned EC2 instances. The ability to automatically scale the runners and use spot instances for the worker nodes provides flexibility in resource management and helps optimize costs.
 
-Persisting the runner's cache across pods speeds up job execution by avoiding the need to re-download packages and re-build artifacts on each run.[7][12] This further reduces billable Actions minutes.
+Persisting the runner's cache across pods speeds up job execution by avoiding the need to re-download packages and re-build artifacts on each run. This further reduces billable Actions minutes.
 
