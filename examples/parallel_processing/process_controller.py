@@ -1,3 +1,20 @@
+"""
+Process lifecycle management controller, the main purpose of such controller will accept requests from the client, transform incoming batch requests to multiple parallel process inside, and execute those processes to initialize associated job and distributed to multiple backend server considering the workload even & request reliable, the controller will keep monitoring the job result, respond to client, handle the error exception and recycle the process resource. 
+
+Sample below only demonstrates the basic concept of how to manage the process lifecycle, it's not a complete solution, the real-world scenario will be more complex and need to consider more factors like the process resource limitation, the process priority, the process dependency, the process retry etc. it mainly focus on the process state transition and managament in parallel processing.
+
+Below are Mermaid state diagram illustrating the transitions between these Linux process states:
+stateDiagram-v2
+    [*] --> Running
+    Running --> InterruptibleSleep
+    Running --> UninterruptibleSleep
+    Running --> Stopped
+    Running --> Zombie
+    InterruptibleSleep --> Running
+    UninterruptibleSleep --> Running
+    Stopped --> Running
+    Zombie --> [*]
+"""
 import multiprocessing
 import queue
 import time
