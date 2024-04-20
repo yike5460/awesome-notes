@@ -1,3 +1,4 @@
+# Check the GitHub repository (https://github.com/aws-samples/claude-prompt-generator) for the latest implementation with Gradio UI
 import re
 from dotenv import load_dotenv
 import csv
