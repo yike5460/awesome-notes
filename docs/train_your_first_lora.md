@@ -193,7 +193,7 @@ Upload model to the S3 bucket <your_bucket_name>
 aws s3 cp *.safetensors s3://<your_bucket_name>/sd/model
 ```
 
-Prepare the dataset using script in [scrape image](../examples/LoRA/customSearch.py) and add the image caption using script in [BLIP](../examples/LoRA/imageCaption.py)
+Prepare the dataset using script in [scrape image](../examples/txt2img2vid/LoRA/customSearch.py) and add the image caption using script in [BLIP](../examples/txt2img2vid/LoRA/imageCaption.py)
 ```
 python customSearch.py
 
