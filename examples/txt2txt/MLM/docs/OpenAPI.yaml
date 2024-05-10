@@ -1,0 +1,365 @@
+openapi: 3.0.0
+info:
+  title: MLM API
+  version: 1.0.0
+  description: API for model lifecycle management
+
+paths:
+  /instances:
+    post:
+      summary: Create a new instance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstanceRequest'
+      responses:
+        '200':
+          description: Instance created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateInstanceResponse'
+    get:
+      summary: List instances
+      responses:
+        '200':
+          description: List of instances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstanceSummary'
+                  
+  /instances/{instanceName}:
+    get:
+      summary: Describe an instance
+      parameters:
+        - name: instanceName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Instance details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceDetails'
+    put:
+      summary: Update an instance
+      parameters:
+        - name: instanceName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInstanceRequest'
+      responses:
+        '200':
+          description: Instance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateInstanceResponse'
+    delete:
+      summary: Delete an instance
+      parameters:
+        - name: instanceName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Instance deleted successfully
+          
+  /models:
+    post:
+      summary: Create a new model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModelRequest'
+      responses:
+        '200':
+          description: Model created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateModelResponse'
+    get:
+      summary: List models
+      responses:
+        '200':
+          description: List of models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModelSummary'
+                  
+  /models/{modelName}:
+    get:
+      summary: Describe a model
+      parameters:
+        - name: modelName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelDetails'
+    put:
+      summary: Update a model
+      parameters:
+        - name: modelName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModelRequest'
+      responses:
+        '200':
+          description: Model updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateModelResponse'
+    delete:
+      summary: Delete a model
+      parameters:
+        - name: modelName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model deleted successfully
+          
+  /metrics:
+    get:
+      summary: Get instance metrics
+      parameters:
+        - name: instanceName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: metricName
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Instance metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricDatapoint'
+
+components:
+  schemas:
+    CreateInstanceRequest:
+      type: object
+      properties:
+        instanceName:
+          type: string
+        instanceType:
+          type: string
+        modelName:
+          type: string
+          
+    CreateInstanceResponse:
+      type: object
+      properties:
+        EndpointArn:
+          type: string
+        EndpointName:
+          type: string
+        EndpointConfigName:
+          type: string
+        ProductionVariants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductionVariant'
+            
+    InstanceSummary:
+      type: object
+      properties:
+        EndpointName:
+          type: string
+        EndpointArn:
+          type: string
+        CreationTime:
+          type: string
+          format: date-time
+        LastModifiedTime:
+          type: string
+          format: date-time
+        EndpointStatus:
+          type: string
+          
+    InstanceDetails:
+      type: object
+      properties:
+        EndpointName:
+          type: string
+        EndpointArn:
+          type: string
+        EndpointConfigName:
+          type: string
+        ProductionVariants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductionVariantDetails'
+        EndpointStatus:
+          type: string
+        CreationTime:
+          type: string
+          format: date-time
+        LastModifiedTime:
+          type: string
+          format: date-time
+          
+    UpdateInstanceRequest:
+      type: object
+      properties:
+        endpointConfigName:
+          type: string
+          
+    UpdateInstanceResponse:
+      type: object
+      properties:
+        EndpointArn:
+          type: string
+        EndpointName:
+          type: string
+          
+    ProductionVariant:
+      type: object
+      properties:
+        VariantName:
+          type: string
+        ModelName:
+          type: string
+        InitialInstanceCount:
+          type: integer
+        InstanceType:
+          type: string
+          
+    ProductionVariantDetails:
+      type: object
+      properties:
+        VariantName:
+          type: string
+        ModelName:
+          type: string
+        CurrentInstanceCount:
+          type: integer
+        DesiredInstanceCount:
+          type: integer
+        InstanceType:
+          type: string
+          
+    CreateModelRequest:
+      type: object
+      properties:
+        modelName:
+          type: string
+        primaryContainer:
+          $ref: '#/components/schemas/ContainerDefinition'
+        executionRoleArn:
+          type: string
+          
+    CreateModelResponse:
+      type: object
+      properties:
+        ModelArn:
+          type: string
+        ModelName:
+          type: string
+          
+    ModelSummary:
+      type: object
+      properties:
+        ModelName:
+          type: string
+        ModelArn:
+          type: string
+        CreationTime:
+          type: string
+          format: date-time
+          
+    ModelDetails:
+      type: object
+      properties:
+        ModelName:
+          type: string
+        ModelArn:
+          type: string
+        PrimaryContainer:
+          $ref: '#/components/schemas/ContainerDefinition'
+        ExecutionRoleArn:
+          type: string
+        CreationTime:
+          type: string
+          format: date-time
+          
+    UpdateModelRequest:
+      type: object
+      properties:
+        primaryContainer:
+          $ref: '#/components/schemas/ContainerDefinition'
+          
+    UpdateModelResponse:
+      type: object
+      properties:
+        ModelArn:
+          type: string
+        ModelName:
+          type: string
+          
+    ContainerDefinition:
+      type: object
+      properties:
+        Image:
+          type: string
+        ModelDataUrl:
+          type: string
+          
+    MetricDatapoint:
+      type: object
+      properties:
+        Timestamp:
+          type: string
+          format: date-time
+        Average:
+          type: number
+        Unit:
+          type: string
