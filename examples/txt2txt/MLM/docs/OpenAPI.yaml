@@ -81,35 +81,41 @@ paths:
       responses:
         '200':
           description: Instance deleted successfully
-          
+
   /models:
-    post:
-      summary: Create a new model
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateModelRequest'
-      responses:
-        '200':
-          description: Model created successfully
+      post:
+        summary: Create a new model
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateModelResponse'
-    get:
-      summary: List models
-      responses:
-        '200':
-          description: List of models
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ModelSummary'
-                  
+                $ref: '#/components/schemas/CreateModelRequest'
+        responses:
+          '200':
+            description: Model created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateModelResponse'
+          '500':
+            description: Failed to create model
+            content:
+              application/json:
+                schema:
+                  type: string
+      get:
+        summary: List models
+        responses:
+          '200':
+            description: List of models
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ModelSummary'
+
   /models/{modelName}:
     get:
       summary: Describe a model
@@ -127,7 +133,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModelDetails'
     put:
-      summary: Update a model
+      summary: Update a model (not supported)
       parameters:
         - name: modelName
           in: path
@@ -139,26 +145,39 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateModelRequest'
+              type: object
       responses:
         '200':
-          description: Model updated successfully
+          description: Model update not supported
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateModelResponse'
+                type: object
+                properties:
+                  message:
+                    type: string
     delete:
-      summary: Delete a model
-      parameters:
-        - name: modelName
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Model deleted successfully
-          
+        summary: Delete a model
+        parameters:
+          - name: modelName
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Model deleted successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+          '500':
+            description: Failed to delete model
+            content:
+              application/json:
+                schema:
+                  type: string
+
   /metrics:
     get:
       summary: Get instance metrics
@@ -294,7 +313,7 @@ components:
           type: string
         primaryContainer:
           $ref: '#/components/schemas/ContainerDefinition'
-        executionRoleArn:
+        roleName:
           type: string
           
     CreateModelResponse:
@@ -325,7 +344,7 @@ components:
           type: string
         PrimaryContainer:
           $ref: '#/components/schemas/ContainerDefinition'
-        ExecutionRoleArn:
+        roleName:
           type: string
         CreationTime:
           type: string

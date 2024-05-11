@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3'
+import * as iam from 'aws-cdk-lib/aws-iam';
 // import * as sagemaker from 'aws-cdk-lib/aws-sagemaker';
 
 export class MLMStack extends Stack {
@@ -13,6 +14,15 @@ export class MLMStack extends Stack {
     const bucket = new s3.Bucket(this, 'ModelBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
+
+
+    // Create SageMaker execution role with permission to access S3 bucket and full SageMaker access
+    const sagemakerRole = new iam.Role(this, 'SageMakerRole', {
+      assumedBy: new iam.ServicePrincipal('sagemaker.amazonaws.com'),
+    });
+
+    bucket.grantReadWrite(sagemakerRole);
+    sagemakerRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSageMakerFullAccess'));
 
     // Create the Lambda functions for each submodule
     const instanceManagementLambda = new lambda.Function(this, 'InstanceManagementFunction', {
@@ -28,7 +38,8 @@ export class MLMStack extends Stack {
       environment: {
         model_bucket: bucket.bucketName,
         // Fix for now
-        model_prefix: 'model'
+        model_prefix: 'model',
+        role_name: sagemakerRole.roleName,
       },
     });
 
@@ -37,6 +48,28 @@ export class MLMStack extends Stack {
       handler: 'observability.handler',  
       code: lambda.Code.fromAsset('lambda'),
     });
+
+    // Grant the Lambda functions access to the IAM to get the execution role, iam:GetRole action
+    instanceManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['iam:GetRole'],
+      resources: ['*'],
+    }));
+
+    modelManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['iam:GetRole'],
+      resources: ['*'],
+    }));
+
+    // Grant the Lambda functions full access to the SageMaker
+    instanceManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['sagemaker:*'],
+      resources: ['*'],
+    }));
+
+    modelManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['sagemaker:*'],
+      resources: ['*'],
+    }));
 
     // Create the API Gateway REST API
     const api = new apigw.RestApi(this, 'MLM-API', {

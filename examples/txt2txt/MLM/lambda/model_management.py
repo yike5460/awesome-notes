@@ -16,8 +16,9 @@ smr_client = boto3.client('sagemaker-runtime')
 iam_client = boto3.client('iam')
 
 # Get environment variables
-model_bucket = os.environ['model_bucket']
-model_prefix = os.environ['model_prefix']
+_model_bucket = os.environ['model_bucket']
+_model_prefix = os.environ['model_prefix']
+_role_name = os.environ['role_name']
 
 # Fix the image url for now
 inference_image_uri = (
@@ -46,7 +47,7 @@ def get_endpoint_execution_role(role_name='AmazonSageMaker-ExecutionRole'):
         if error_code == 'NoSuchEntity':
             logger.info(f"The role {role_name} does not exist.")
         else:
-            logger.info(f"Unexpected error occurred: {error}")
+            logger.info(f"Failed to retrieve role: {error}")
         return None
 
 def create_model(model_name, role, s3_code_artifact):
@@ -62,6 +63,7 @@ def create_model(model_name, role, s3_code_artifact):
     Returns: 
     dict: The response from the SageMaker `create_model` API call.    
     """
+    logger.info(f"Creating model payload: {model_name}, {role}, {s3_code_artifact}")
     try:
         create_model_response = sm_client.create_model(
             ModelName=model_name,
@@ -71,14 +73,14 @@ def create_model(model_name, role, s3_code_artifact):
                 "ModelDataUrl": s3_code_artifact
             }
         )
-        logger.info("Model created successfully:", create_model_response)
+        logger.info(f"Model created successfully: {create_model_response}")
         return create_model_response
     except ClientError as e:
-        logger.info("Failed to create model:", e)
-        return None
+        logger.error(f"Failed to create model: {e}")
+        return e.response
 
 def handler(event, context):
-    logger.info("raw event: {} and event body {}".format(event, json.loads(event['body'])))
+    logger.info("raw event: {} and context {}".format(event, context))
     http_method = event['httpMethod']
     if http_method == 'POST':
         # Create new SageMaker model
@@ -86,7 +88,7 @@ def handler(event, context):
         model_name = payload['modelName']
         
         # Get the SageMaker execution role ARN
-        role = get_endpoint_execution_role()
+        role = get_endpoint_execution_role(role_name=_role_name)
         if role is None:
             return {
                 'statusCode': 500,
@@ -97,9 +99,9 @@ def handler(event, context):
         response = create_model(
             model_name=model_name,
             role=role,
-            inference_image_uri=inference_image_uri,
-            # assemble the s3 path using passing env variable bucket and prefix, 's3://bucket/prefix/model.tar.gz'
-            s3_code_artifact="s3://" + model_bucket + "/" + model_prefix + "/" + model_name + ".tar.gz"
+            # inference_image_uri=inference_image_uri,
+             # assemble the s3 path using passing env variable bucket and prefix, 's3://bucket/prefix/model.tar.gz'
+            s3_code_artifact="s3://" + _model_bucket + "/" + _model_prefix + "/" + model_name + ".tar.gz"
         )
         return {
             'statusCode': 200,
