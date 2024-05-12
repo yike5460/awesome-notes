@@ -51,12 +51,12 @@ export class MLMStack extends Stack {
 
     // Grant the Lambda functions access to the IAM to get the execution role, iam:GetRole action
     instanceManagementLambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['iam:GetRole'],
+      actions: ['iam:GetRole', 'iam:PassRole'],
       resources: ['*'],
     }));
 
     modelManagementLambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['iam:GetRole'],
+      actions: ['iam:GetRole', 'iam:PassRole'],
       resources: ['*'],
     }));
 

@@ -2,6 +2,7 @@
 
 import boto3
 from botocore.exceptions import ClientError
+from urllib.parse import unquote
 
 import os
 import json
@@ -56,9 +57,9 @@ def create_model(model_name, role, s3_code_artifact):
 
     Parameters:
     model_name (str): The name of the model.
-    role (str): The ARN of the SageMaker execution role.
-    inference_image_uri (str): The URI of the Docker image for the inference container.
-    s3_code_artifact (str): The S3 URI of the model artifact.
+    role (str): The ARN of the SageMaker execution role, NOT required in RESTful API.
+    inference_image_uri (str): The URI of the Docker image for the inference container, NOT required in RESTful API.
+    s3_code_artifact (str): The S3 URI of the model artifact, NOT required in RESTful API.
 
     Returns: 
     dict: The response from the SageMaker `create_model` API call.    
@@ -82,11 +83,9 @@ def create_model(model_name, role, s3_code_artifact):
 def handler(event, context):
     logger.info("raw event: {} and context {}".format(event, context))
     http_method = event['httpMethod']
+    payload = json.loads(event['body'])
     if http_method == 'POST':
-        # Create new SageMaker model
-        payload = json.loads(event['body'])
         model_name = payload['modelName']
-        
         # Get the SageMaker execution role ARN
         role = get_endpoint_execution_role(role_name=_role_name)
         if role is None:
@@ -108,15 +107,48 @@ def handler(event, context):
             'body': json.dumps(response)
         }
     elif http_method == 'GET':
-        # Call SageMaker API to list models
-        response = sm_client.list_models()
-        return {
-            'statusCode': 200,
-            'body': json.dumps(response['Models'])
-        }
+        # Check if the model name exists, if yes return the model details using describe_model API otherwise scan all models and return the list
+        if 'modelName' not in payload:
+            try:
+                response = sm_client.list_models()
+            except ClientError as e:
+                return {
+                    'statusCode': 500,
+                    'body': json.dumps(f"Failed to list models: {e}")
+                }
+            # Assemble the model details
+            model_list = []
+            if 'Models' in response and response['Models']:
+                for model in response['Models']:
+                    model_name = model['ModelName']
+                    model_arn = model['ModelArn']
+                    creation_time = model['CreationTime']  # This is a datetime object
+                    model_list.append({
+                        'ModelName': model_name,
+                        'ModelArn': model_arn,
+                        'CreationTime': creation_time.strftime('%Y-%m-%d %H:%M:%S')
+                    })
+            else:
+                return {
+                    'statusCode': 404,
+                    'body': json.dumps(f"No model found in response: {response}")
+                }
+
+            return {
+                'statusCode': 200,
+                'body': json.dumps(model_list)
+            }
+        # Decode the URL-encoded model name, only operate in describe_model for now
+        model_name = unquote(payload['modelName'])
+        try:
+            response = sm_client.describe_model(ModelName=model_name)
+        except ClientError as e:
+            return {
+                'statusCode': 500,
+                'body': json.dumps(f"Failed to get model: {e}")
+            }
     elif http_method == 'PUT':
-        model_name = event['pathParameters']['modelName']
-        payload = json.loads(event['body'])
+        model_name = payload['modelName']
         # Consider to update the endpoint config that takes the new model and update the endpoint afterwward, no operation to update model for now, give such hint directly for now
         response = {
             'message': 'Model update is not supported. Consider updating the endpoint configuration instead.'
@@ -126,7 +158,7 @@ def handler(event, context):
             'body': json.dumps(response)
         }
     elif http_method == 'DELETE':
-        model_name = event['pathParameters']['modelName']
+        model_name = payload['modelName']
         # Call SageMaker API to delete model
         try:
             response = sm_client.delete_model(ModelName=model_name)
