@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError
 from urllib.parse import unquote
 
 import os
+import re
 import json
 import logging
 
@@ -25,6 +26,12 @@ _role_name = os.environ['role_name']
 inference_image_uri = (
     f"763104351884.dkr.ecr.{region}.amazonaws.com/djl-inference:0.23.0-deepspeed0.9.5-cu118"
 )
+
+def model_name_validation(model_name):
+    # Member must satisfy regular expression pattern: ^[a-zA-Z0-9]([\-a-zA-Z0-9]*[a-zA-Z0-9])?
+    if not re.match(r'^[a-zA-Z0-9]([\-a-zA-Z0-9]*[a-zA-Z0-9])?', model_name):
+        return False
+    return True
 
 def get_endpoint_execution_role(role_name='AmazonSageMaker-ExecutionRole'):
     """
@@ -65,6 +72,12 @@ def create_model(model_name, role, s3_code_artifact):
     dict: The response from the SageMaker `create_model` API call.    
     """
     logger.info(f"Creating model payload: {model_name}, {role}, {s3_code_artifact}")
+    # Validate the model name
+    if not model_name_validation(model_name):
+        return {
+            'statusCode': 400,
+            'body': json.dumps(f"Invalid model name: {model_name} accepted pattern: ^[a-zA-Z0-9]([\-a-zA-Z0-9]*[a-zA-Z0-9])?")
+        }
     try:
         create_model_response = sm_client.create_model(
             ModelName=model_name,
@@ -95,17 +108,22 @@ def handler(event, context):
             }
 
         # Create the SageMaker model
-        response = create_model(
-            model_name=model_name,
-            role=role,
-            # inference_image_uri=inference_image_uri,
-             # assemble the s3 path using passing env variable bucket and prefix, 's3://bucket/prefix/model.tar.gz'
-            s3_code_artifact="s3://" + _model_bucket + "/" + _model_prefix + "/" + model_name + ".tar.gz"
-        )
-        return {
-            'statusCode': 200,
-            'body': json.dumps(response)
-        }
+        try:
+            response = create_model(
+                model_name=model_name,
+                role=role,
+                # assemble the s3 path using passing env variable bucket and prefix, 's3://bucket/prefix/model.tar.gz'
+                s3_code_artifact="s3://" + _model_bucket + "/" + _model_prefix + "/" + model_name + ".tar.gz"
+            )
+            return {
+                'statusCode': 200,
+                'body': json.dumps(response)
+            }
+        except ClientError as e:
+            return {
+                'statusCode': 500,
+                'body': json.dumps(f"Failed to create model: {e}")
+            }
     elif http_method == 'GET':
         # Check if the model name exists, if yes return the model details using describe_model API otherwise scan all models and return the list
         if 'modelName' not in payload:
