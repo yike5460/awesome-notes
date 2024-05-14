@@ -5,3 +5,6 @@ coverage
 __pycache__
 downloaded_images
 sample_models
+# pem files
+*.pem
+.ragatouille
