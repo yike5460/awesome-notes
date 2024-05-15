@@ -71,6 +71,13 @@ export class MLMStack extends Stack {
       resources: ['*'],
     }));
 
+    // Grant the Lambda functions full access to CloudWatch Logs to get the SageMaker metrics
+    observabilityLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['cloudwatch:*'],
+      resources: ['*'],
+    }));
+
     // Create the API Gateway REST API
     const api = new apigw.RestApi(this, 'MLM-API', {
       restApiName: 'MLM Service',
