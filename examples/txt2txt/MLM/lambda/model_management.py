@@ -21,8 +21,9 @@ iam_client = boto3.client('iam')
 _model_bucket = os.environ['model_bucket']
 _model_prefix = os.environ['model_prefix']
 _role_name = os.environ['role_name']
-
-# Fix the image url for now
+# Not userd for now
+_inference_image_uri = os.environ['inference_image_uri']
+# Fixed inference image URI
 inference_image_uri = (
     f"763104351884.dkr.ecr.{region}.amazonaws.com/djl-inference:0.23.0-deepspeed0.9.5-cu118"
 )
@@ -83,8 +84,9 @@ def create_model(model_name, role, s3_code_artifact):
             ModelName=model_name,
             ExecutionRoleArn=role,
             PrimaryContainer={
-                "Image": inference_image_uri,
-                "ModelDataUrl": s3_code_artifact
+                "Image": _inference_image_uri,
+                # Comment out the ModelDataUrl for now
+                # "ModelDataUrl": s3_code_artifact
             }
         )
         logger.info(f"Model created successfully: {create_model_response}")

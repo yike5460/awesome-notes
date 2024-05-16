@@ -1,10 +1,13 @@
-import { App, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
+import { App, Stack, StackProps, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as iam from 'aws-cdk-lib/aws-iam';
-// import * as sagemaker from 'aws-cdk-lib/aws-sagemaker';
+
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecr_assets from 'aws-cdk-lib/aws-ecr-assets';
+import * as ecrdeploy from 'cdk-ecr-deployment';
 
 export class MLMStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
@@ -15,6 +18,25 @@ export class MLMStack extends Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
+    // Create SagemMaker image in ECR from local Dockerfile and pass the inference_image_uri to the Lambda function as environment variable to create the SageMaker model
+    const ecrImage = new ecr.Repository(this, 'BYOCImage', {
+      repositoryName: 'ecr-byoc-image',
+    });
+    
+    const dockerImageAsset = new ecr_assets.DockerImageAsset(this, 'BYOCAsset', {
+      directory: 'ecr-byoc-assets',
+    });
+
+    // Complete the dirty job of commands below:
+    // # aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your account id>.dkr.ecr.us-east-1.amazonaws.com
+    // # docker build -t byoc-image .
+    // # docker tag byoc-image:latest <your account id>.dkr.ecr.us-east-1.amazonaws.com/byoc-image:latest
+    // # docker push <your account id>.dkr.ecr.us-east-1.amazonaws.com/byoc-image:latest
+
+    // new ecrdeploy.ECRDeployment(this, 'DeployDockerImage', {
+    //   src: new ecrdeploy.DockerImageName(dockerImageAsset.imageUri),
+    //   dest: new ecrdeploy.DockerImageName(`${ecrImage.repositoryUri}:latest`),
+    // });
 
     // Create SageMaker execution role with permission to access S3 bucket and full SageMaker access
     const sagemakerRole = new iam.Role(this, 'SageMakerRole', {
@@ -29,6 +51,7 @@ export class MLMStack extends Stack {
       runtime: lambda.Runtime.PYTHON_3_10,
       handler: 'instance_management.handler',
       code: lambda.Code.fromAsset('lambda'),
+      timeout: Duration.minutes(15),
     });
 
     const modelManagementLambda = new lambda.Function(this, 'ModelManagementFunction', {
@@ -40,13 +63,16 @@ export class MLMStack extends Stack {
         // Fix for now
         model_prefix: 'model',
         role_name: sagemakerRole.roleName,
+        inference_image_uri: ecrImage.repositoryUri,
       },
+      timeout: Duration.minutes(15),
     });
 
     const observabilityLambda = new lambda.Function(this, 'ObservabilityFunction', {
       runtime: lambda.Runtime.PYTHON_3_10,
       handler: 'observability.handler',  
       code: lambda.Code.fromAsset('lambda'),
+      timeout: Duration.minutes(15),
     });
 
     // Grant the Lambda functions access to the IAM to get the execution role, iam:GetRole action
@@ -68,6 +94,19 @@ export class MLMStack extends Stack {
 
     modelManagementLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ['sagemaker:*'],
+      resources: ['*'],
+    }));
+
+    // Grant the Lambda functions full access to ECR to get the inference image
+    instanceManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ecr:*'],
+      resources: ['*'],
+    }));
+
+    modelManagementLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ecr:*'],
       resources: ['*'],
     }));
 
@@ -140,6 +179,9 @@ export class MLMStack extends Stack {
     });
     new CfnOutput(this, 'API URL for observability', {
       value: `${api.url}/metrics`,
+    });
+    new CfnOutput(this, 'Inference Image URI', {
+      value: ecrImage.repositoryUri,
     });
   }
 }

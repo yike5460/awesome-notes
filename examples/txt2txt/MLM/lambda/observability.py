@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-cloudwatch_client = boto3.client('cloudwatch', region_name=boto3.session.Session().region_name)
+cloudwatch_client = boto3.client('cloudwatch', region_name='us-east-1')
 
 def get_metric_statistics(namespace, metric_name, dimensions, start_time, end_time, period, statistics, unit):
     try:
@@ -90,14 +90,27 @@ def handler(event, context):
         # Call CloudWatch API to get metrics
         try:
             # Fix to namespace AWS/SageMaker for now
-            response = get_metric_statistics('AWS/SageMaker', metric_name, [{'Name': 'EndpointName', 'Value': endpoint_name}], start_time, end_time, 60, ['Average', 'Sum', 'Min', 'Max', 'SampleCount'], 'Count')
+            response = get_metric_statistics('AWS/SageMaker', metric_name, [{'Name': 'EndpointName', 'Value': endpoint_name}], start_time, end_time, 60, ['Average', 'Sum', 'Minimum', 'Maximum', 'SampleCount'], 'Count')
         except Exception as e:
             return {
                 'statusCode': 500,
                 'body': json.dumps(f"Failed to get metric statistics: {e}")
             }
+        # print("response: ", response)
         metric_data = response['Datapoints']
         return {
             'statusCode': 200,
             'body': json.dumps(metric_data)
         }
+
+# # Main entry point for debugging purposes
+# if __name__ == "__main__":
+#     event = {
+#         "httpMethod": "GET",
+#         "body": json.dumps({
+#             "endpointName": "etl-endpoint",
+#             "metricName": "Invocation4XXErrors"
+#         })
+#     }
+#     context = {}
+#     print(handler(event, context))
