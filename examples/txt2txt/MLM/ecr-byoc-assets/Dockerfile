@@ -1,4 +1,4 @@
-# Make sure to login to public ECR before building the image: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 763104351884.dkr.ecr.us-east-1.amazonaws.com
+# Make sure to login to public ECR before building the image: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 763104351884.dkr.ecr.us-west-2.amazonaws.com
 
 # Refer the official documentation for the base image at https://github.com/aws/deep-learning-containers/blob/master/available_images.md
 FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/djl-inference:0.27.0-deepspeed0.12.6-cu121

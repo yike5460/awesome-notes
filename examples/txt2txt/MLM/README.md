@@ -55,3 +55,8 @@ sequenceDiagram
     Lambda-->>APIGateway: Return API response
     APIGateway-->>Client: Return API response to client
 ```
+
+## OpenAPI Specification
+The MLM module will expose a set of RESTful APIs conforming to the OpenAPI specification. The OpenAPI specification will define the API paths, methods, request/response schemas, and security requirements. The OpenAPI specification will be used to generate client SDKs and server stubs for easy integration with client applications and UI.
+
+Refer to the [OpenAPI Specification](docs/OpenAPI_v1.1.yaml) for the detailed API definitions and Postman compatible [collection](docs/postman_collection_v1.1.json) to import and test the APIs directly.

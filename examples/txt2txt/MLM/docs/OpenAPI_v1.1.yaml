@@ -1,8 +1,14 @@
 openapi: 3.0.0
 info:
   title: MLM API
-  version: 1.0.0
   description: API for model lifecycle management
+  version: 1.1.0
+
+servers:
+  - url: '{baseUrl}'
+    variables:
+      baseUrl:
+        default: /
 
 paths:
   /instances:
@@ -81,41 +87,41 @@ paths:
       responses:
         '200':
           description: Instance deleted successfully
-
+          
   /models:
-      post:
-        summary: Create a new model
-        requestBody:
-          required: true
+    post:
+      summary: Create a new model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModelRequest'
+      responses:
+        '200':
+          description: Model created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateModelRequest'
-        responses:
-          '200':
-            description: Model created successfully
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/CreateModelResponse'
-          '500':
-            description: Failed to create model
-            content:
-              application/json:
-                schema:
-                  type: string
-      get:
-        summary: List models
-        responses:
-          '200':
-            description: List of models
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ModelSummary'
-
+                $ref: '#/components/schemas/CreateModelResponse'
+        '500':
+          description: Failed to create model
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      summary: List models
+      responses:
+        '200':
+          description: List of models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModelSummary'
+                  
   /models/{modelName}:
     get:
       summary: Describe a model
@@ -157,27 +163,27 @@ paths:
                   message:
                     type: string
     delete:
-        summary: Delete a model
-        parameters:
-          - name: modelName
-            in: path
-            required: true
-            schema:
-              type: string
-        responses:
-          '200':
-            description: Model deleted successfully
-            content:
-              application/json:
-                schema:
-                  type: object
-          '500':
-            description: Failed to delete model
-            content:
-              application/json:
-                schema:
-                  type: string
-
+      summary: Delete a model
+      parameters:
+        - name: modelName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Failed to delete model
+          content:
+            application/json:
+              schema:
+                type: string
+                
   /metrics:
     get:
       summary: Get instance metrics
@@ -187,7 +193,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: metricName
+        - name: metricName  
           in: query
           required: true
           schema:
@@ -313,7 +319,7 @@ components:
           type: string
         primaryContainer:
           $ref: '#/components/schemas/ContainerDefinition'
-        roleName:
+        executionRoleArn:
           type: string
           
     CreateModelResponse:
@@ -344,25 +350,11 @@ components:
           type: string
         PrimaryContainer:
           $ref: '#/components/schemas/ContainerDefinition'
-        roleName:
+        ExecutionRoleArn:
           type: string
         CreationTime:
           type: string
           format: date-time
-          
-    UpdateModelRequest:
-      type: object
-      properties:
-        primaryContainer:
-          $ref: '#/components/schemas/ContainerDefinition'
-          
-    UpdateModelResponse:
-      type: object
-      properties:
-        ModelArn:
-          type: string
-        ModelName:
-          type: string
           
     ContainerDefinition:
       type: object

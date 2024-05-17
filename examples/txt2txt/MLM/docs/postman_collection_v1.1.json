@@ -15,6 +15,9 @@
 					"item": [
 						{
 							"name": "Describe an instance",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
 							"request": {
 								"method": "GET",
 								"header": [
@@ -23,6 +26,15 @@
 										"value": "application/json"
 									}
 								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"endpointName\": \"etl-endpoint\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
 									"raw": "{{baseUrl}}/instances/:instanceName",
 									"host": [
@@ -184,6 +196,15 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"endpointName\": \"endpoint-name\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
 									"raw": "{{baseUrl}}/instances/:instanceName",
 									"host": [
@@ -251,7 +272,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"instanceName\": \"<string>\",\n  \"instanceType\": \"<string>\",\n  \"modelName\": \"<string>\"\n}",
+							"raw": "{\n  \"endpointName\": \"mlm-endpoint\",\n  \"instanceType\": \"ml.g4dn.2xlarge\",\n  \"modelName\": \"etlmodel-Ms9JwhkOHxJ1\"\n}",
 							"options": {
 								"raw": {
 									"headerFamily": "json",
@@ -320,6 +341,9 @@
 				},
 				{
 					"name": "List instances",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -328,6 +352,15 @@
 								"value": "application/json"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/instances",
 							"host": [
@@ -693,7 +726,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"modelName\": \"model_name\",\n  \"primaryContainer\": {\n    \"Image\": \"unused\",\n    \"ModelDataUrl\": \"unused\"\n  },\n  \"roleName\": \"unused\"\n}",
+							"raw": "{\n  \"modelName\": \"mlm-model\",\n  \"primaryContainer\": {\n    \"Image\": \"unused\",\n    \"ModelDataUrl\": \"unused\"\n  },\n  \"roleName\": \"unused\"\n}",
 							"options": {
 								"raw": {
 									"headerFamily": "json",
@@ -880,6 +913,9 @@
 			"item": [
 				{
 					"name": "Get instance metrics",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -888,6 +924,15 @@
 								"value": "application/json"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"endpointName\": \"etl-endpoint\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/metrics?instanceName=<string>&metricName=<string>",
 							"host": [

@@ -7,11 +7,11 @@ cloudwatch = boto3.client('cloudwatch')
 while True:
     # Get GPU utilization
     gpu_util = subprocess.check_output(['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,nounits,noheader'])
-    gpu_util = int(gpu_util)
+    gpu_util = int(gpu_util.decode().strip())
      
     # Get GPU memory utilization
     gpu_mem_util = subprocess.check_output(['nvidia-smi', '--query-gpu=utilization.memory', '--format=csv,nounits,noheader'])  
-    gpu_mem_util = int(gpu_mem_util)
+    gpu_mem_util = int(gpu_mem_util.decode().strip())
 
     # Put metrics into CloudWatch
     cloudwatch.put_metric_data(
