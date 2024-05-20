@@ -8,6 +8,7 @@
 4. Terminating the EC2 instance when the job completes
 5. Integrating with a distributed cache for faster job execution
 6. Providing a seamless user experience to configure runners from their GitHub workflow YAML
+Similar function provided in [depot](https://depot.dev/blog/depot-github-actions-runners)
 
 ### Implementation Steps
 
