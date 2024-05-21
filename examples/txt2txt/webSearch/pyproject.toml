@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "websearch"
+version = "0.1.0"
+description = "Required package to execute the web search engine"
+authors = ["yike5460 <yike5460@163.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+elasticsearch = "^8.13.1"
+Flask = "^3.0.3"
+transformers = "^4.41.0"
+spacy = "^3.7.4"
+beautifulsoup4 = "^4.12.3"
+tiktoken = "^0.7.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
