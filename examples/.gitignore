@@ -8,3 +8,6 @@ sample_models
 # pem files
 *.pem
 .ragatouille
+*.crt
+*.key
+*.p12

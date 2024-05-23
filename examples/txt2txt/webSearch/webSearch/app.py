@@ -54,16 +54,56 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 # Initialize Elasticsearch with local instance
 # Before that you need to have Elasticsearch running locally
 """
+Initialization"
 $ docker stop $(docker ps -a -q)
-$ docker run -d -p 9200:9200 -p 9300:9300 \
+$ docker rm $(docker ps -a -q)
+
+Launch without SSL:
+docker run -d -p 9200:9200 -p 9300:9300 \
   -e "discovery.type=single-node" \
   -e "xpack.security.enabled=false" \
   docker.elastic.co/elasticsearch/elasticsearch:8.13.4
 $ curl -X GET "http://localhost:9200/"
+
+Launch with SSL:
+$ docker run --name temp-elasticsearch -it docker.elastic.co/elasticsearch/elasticsearch:8.13.4 bash
+<inside container instance>
+$ elasticsearch-certutil ca
+$ elasticsearch-certutil cert --ca elastic-stack-ca.p12
+<inside container instance>
+$ openssl pkcs12 -in elastic-certificates.p12 -clcerts -nokeys -out elastic.crt
+$ openssl pkcs12 -in elastic-certificates.p12 -nocerts -nodes -out elastic.key
+$ openssl pkcs12 -in  elastic-certificates.p12 -out ca.crt -cacerts -nokeys
+$ docker run -d -p 9200:9200 -p 9300:9300 \
+  -v /home/ubuntu/justNotes/examples/txt2txt/webSearch/webSearch/ca:/usr/share/elasticsearch/config/certs \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=true" \
+  -e "ELASTIC_PASSWORD=YourStrongPasswordHere" \
+  -e "xpack.security.http.ssl.enabled=true" \
+  -e "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/elastic.key" \
+  -e "xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/elastic.crt" \
+  -e "xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt" \
+  -e "xpack.security.transport.ssl.enabled=true" \
+  -e "xpack.security.transport.ssl.verification_mode=certificate" \
+  -e "xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/elastic.key" \
+  -e "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/elastic.crt" \
+  -e "xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt" \
+  docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+
+curl -k -u elastic:YourStrongPasswordHere -X GET "https://localhost:9200/"
 """
 # disable the SSL verification for local testing
-es = Elasticsearch(hosts=["http://localhost:9200"], verify_certs=False)
+# es = Elasticsearch(hosts=["http://localhost:9200"], verify_certs=False)
 
+# enable the SSL verification for production
+es = Elasticsearch(
+    hosts=["https://127.0.0.1:9200"],
+    basic_auth=('elastic', 'YourStrongPasswordHere'),  # Use basic_auth instead of http_auth
+    verify_certs=True,
+    # disable hostname verification for debugging purposes
+    ssl_assert_hostname=False,
+    ca_certs="/home/ubuntu/justNotes/examples/txt2txt/webSearch/webSearch/ca/ca.crt"  # Path to your CA certificate
+)
 
 @app.route("/")
 def home():
@@ -93,20 +133,21 @@ def search():
                 }
             ), 400
 
-        results = []
+        web_results = []
+        doc_results = []
 
         # Step 2: Web Search
         if search_options in ["all", "web"]:
             web_results = search_web(query)
-            results.extend(web_results)
+            web_results.extend(web_results)
 
         # Step 3: Knowledge Base Integration
-        if document and search_options in ["all", "document"]:
-            doc_results = search_document(document, query)
-            results.extend(doc_results)
+        if search_options in ["all", "document"]:
+            doc_results = search_document(document, query, top_k=3)
+            doc_results.extend(doc_results)
 
         # Step 4: Result Aggregation and Reranking
-        aggregated_results = aggregate_and_rerank(results)
+        aggregated_results = aggregate_and_rerank(web_results, doc_results)
 
         # Step 5: Response Generation
         final_response = generate_response(aggregated_results)
@@ -119,6 +160,7 @@ def search():
 
 @app.route("/upload", methods=["POST"])
 def index_document():
+    # TODO, The document should pass into embedding model to convert into vector before indexing into Elasticsearch
     document = request.files.get("document", None)
     if document:
         filename = document.filename.lower()
@@ -245,7 +287,6 @@ def search_google(query):
         #         snippet_text = "No snippet found"
 
         #     clean_results.append({'title': title_text, 'snippet': snippet_text})
-
         logger.debug(f"Google cleaned search results: {clean_results}")
         return clean_results
 
@@ -272,11 +313,34 @@ def search_stackoverflow(query):
     return response.json()
 
 
-def search_document(document, query):
-    es.index(index="documents", body={"content": document.read().decode("utf-8")})
+def search_document(es, query, top_k=10):
+    """
+    Search for documents in the Elasticsearch index that match the given query.
+
+    :param es: Elasticsearch client instance
+    :param query: Search query string
+    :param top_k: Number of top documents to retrieve
+    :return: List of top K documents matching the query
+    """
+    logger.debug("****Searching the document****")
+    logger.debug(f"Query: {query}")
+
     response = es.search(
-        index="documents", body={"query": {"match": {"content": query}}}
+        index="documents",
+        body={
+            "size": top_k,  # Limit the number of results to top_k
+            "query": {
+                "match": {
+                    "content": query
+                }
+            },
+            "sort": [
+                "_score"  # Sort by score descending (highest scores first)
+            ]
+        }
     )
+
+    logger.debug(f"Document search results: {response}")
     return response["hits"]["hits"]
 
 
