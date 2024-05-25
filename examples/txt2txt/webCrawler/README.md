@@ -72,3 +72,5 @@ To optimize the performance of a distributed web crawler system, several strateg
 - Update and Duplicate Detection: Making HEAD requests to check for page updates and implementing algorithms to detect duplicate content.
 
 - Efficient Storage: Optimize data storage for quick retrieval and minimal space usage, e.g. using compression or indexing.
+
+- Monitoring and Logging: Implement comprehensive monitoring and logging to track the performance of the crawler, detect issues, and optimize resource usage. Use Amazon CloudWatch for monitoring and logging Lambda function invocations, errors, and performance metrics with dashboards and alarms for real-time insights.
