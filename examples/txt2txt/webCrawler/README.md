@@ -1,6 +1,8 @@
 # Background
 Designing a distributed web crawler system, especially one powered by a Large Language Model (LLM) capable of crawling billions of web pages, involves a comprehensive understanding of the core components, interactive workflow, performance optimization strategies, and the selection of appropriate frameworks and languages. This endeavor aims to create a system that is scalable, efficient, and capable of handling the vastness and dynamism of the web.
 
+The integration of Knowledge Graphs (KGs) with Large Language Models (LLMs) represents a significant advancement in the design of distributed web crawler systems. This combination aims to create a system that is not only scalable and efficient but also capable of delivering more accurate, contextually relevant, and reliable search results. By leveraging the structured representation of KGs and the generative capabilities of LLMs, this enhanced system addresses the vastness and dynamism of the web with improved precision.
+
 ## Core Components
 The core components of a distributed web crawler system include the following:
 - Seed URL Detector: Initiates the crawl by selecting starting URLs based on specific criteria or inputs.
@@ -9,7 +11,7 @@ The core components of a distributed web crawler system include the following:
 
 - Fetcher: Downloads web pages from the URLs provided by the URL Frontier. Amazon Lambda functions, written in Python, can be utilized to fetch web pages. Lambda allows for running code in response to triggers (such as new URLs added to the URL Frontier in DynamoDB) without managing servers, which aligns with the need for parallel processing.
 
-- **Parser/Extractor & Content Processor:**: Extracts links, data, and other relevant information from the fetched web pages, processes the extracted data, which may involve running it through a Large Language Model for analysis, extraction of insights, or preparation for storage. Amazon Lambda functions can be used to process the extracted data, potentially utilizing AWS BedRock API to interact with a Large Language Model for advanced analysis. And we consider to use BeautifulSoup for lite scraping jobs.
+- **Parser/Extractor & Content Processor:**:  Extracts links, data, and other relevant information from fetched web pages. This component now incorporates a Retrieval-Augmented Generation (RAG) process, where the LLM first retrieves relevant information from a knowledge graph using vector and semantic search, then augments the response with contextual data from the KG. This process, powered by BeautifulSoup and potentially AWS BedRock API for LLM interaction, generates more precise and contextually relevant output. Amazon Lambda functions can be used to process the extracted data, potentially utilizing AWS BedRock API to interact with a Large Language Model for advanced analysis. And we consider to use BeautifulSoup for lite scraping jobs.
 
 - Data Storage & Cache: Stores the crawled data in a structured format for easy retrieval and analysis. This can include databases or file storage systems. Amazon S3 for raw and processed data storage. S3 offers high durability, availability, and scalability, making it suitable for storing the vast amounts of data a web crawler would collect. For structured data resulting from the content processing phase, Amazon DynamoDB can be used depending on the data's nature and query requirements. Frequently accessed and unchanged data is cached using Amazon ElastiCache, either Redis or Memcached, based on the application's requirements. This caching layer serves as an intermediary storage to quickly serve repeated requests without hitting the primary data storage, thus reducing latency and improving response times for the upstream web search engine.
 
@@ -37,6 +39,7 @@ sequenceDiagram
     participant UF as URL Frontier (DynamoDB)
     participant F as Fetcher (Lambda)
     participant PECP as Parser/Extractor & Content Processor (Lambda + BeautifulSoup)
+    participant KG as Knowledge Graph (Neo4j)
     participant EC as Cache (ElastiCache)
     participant DS as Data Storage (S3)
     participant DD as Duplicate Detection (Lambda)
@@ -50,6 +53,8 @@ sequenceDiagram
         CS->>UF: Trigger update of URL Frontier
         UF->>F: Schedule URLs for crawling
         F->>PECP: Retrieve web pages
+        PECP->>KG: Retrieve & Augment from KG
+        KG->>PECP: Provide Contextual Data
         PECP->>DD: Extract & process data
         DD->>PECP: Check for duplicates
         PECP->>DS: Store processed data
