@@ -1,6 +1,6 @@
 # Import necessary libraries
 import logging
-import os
+# import os
 
 import requests
 import spacy
@@ -16,8 +16,8 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 load_dotenv()
 
 # Read from local env file
-API_KEY = os.getenv("GOOGLE_API_KEY")
-CSE_ID = os.getenv("GOOGLE_CSE_ID")
+# API_KEY = os.getenv("GOOGLE_API_KEY")
+# CSE_ID = os.getenv("GOOGLE_CSE_ID")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,7 +30,7 @@ logger.setLevel(logging.DEBUG)
 
 # Create console handler and set level to INFO
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.INFO)
 
 # Create formatter
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -42,7 +42,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 app.logger.addHandler(console_handler)
-app.logger.setLevel(logging.DEBUG)
+app.logger.setLevel(logging.INFO)
 
 # Initialize NLP models
 nlp = spacy.load("en_core_web_sm")
@@ -107,7 +107,7 @@ es = Elasticsearch(
 
 @app.route("/")
 def home():
-    return render_template("upload_doc.html")
+    return render_template("main_page.html")
 
 
 # User Interface Route
@@ -143,14 +143,19 @@ def search():
 
         # Step 3: Knowledge Base Integration
         if search_options in ["all", "document"]:
-            doc_results = search_document(document, query, top_k=3)
+            doc_results = search_document(query, top_k=3)
             doc_results.extend(doc_results)
 
         # Step 4: Result Aggregation and Reranking
         aggregated_results = aggregate_and_rerank(web_results, doc_results)
 
         # Step 5: Response Generation
-        final_response = generate_response(aggregated_results)
+        # Assembe the final response with original query and aggregated results
+        query_results = [query] + [result["content"] for result in aggregated_results]
+
+        # Trunk the query length to 1024 tokens in case error occurs: Token indices sequence length is longer than the specified maximum sequence length for this model (10541 > 1024)
+        query_results = " ".join(query_results)[:1024]
+        final_response = generate_response(query_results)
 
         return jsonify({"response": final_response})
 
@@ -313,11 +318,10 @@ def search_stackoverflow(query):
     return response.json()
 
 
-def search_document(es, query, top_k=10):
+def search_document(query, top_k=10):
     """
     Search for documents in the Elasticsearch index that match the given query.
 
-    :param es: Elasticsearch client instance
     :param query: Search query string
     :param top_k: Number of top documents to retrieve
     :return: List of top K documents matching the query
@@ -345,17 +349,51 @@ def search_document(es, query, top_k=10):
 
 
 def aggregate_and_rerank(web_results, doc_results):
-    # Use BERT to rerank results
-    all_results = web_results + doc_results
+    # TODO Use BERT to rerank results
+    """
+    Transform both result into a common format:
+    original web result:
+    [
+        'content'
+    ]
+    original doc result:
+    [
+        {
+        '_index': 'documents', 
+        '_id': '8ijOuI8BxhHDdfbBYvZM', 
+        '_score': 2.3219662, 
+        '_ignored': ['content.keyword'], 
+        '_source': 
+            {
+            'content': 'content'
+            }
+        }
+    ]
+    common format:
+    [
+        {
+        'content': 'content',
+        '_score': 2.3219662
+        }
+    ]
+    """
+    all_results = []
+    for result in web_results:
+        # Give all web results a score of 1.0
+        all_results.append({"content": result, "_score": 1.0})
+    for result in doc_results:
+        all_results.append({"content": result["_source"]["content"], "_score": result["_score"]})
     ranked_results = rank_results(all_results)
     return ranked_results
 
 
 def rank_results(results):
+    logger.debug("****Ranking the results****")
     return sorted(results, key=lambda x: x["_score"], reverse=True)
 
 
 def generate_response(results):
+    logger.debug("****Generating the response****")
     inputs = tokenizer(results, return_tensors="pt")
     outputs = model(**inputs)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)

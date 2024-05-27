@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            color: #333;
+            display: flex;
+            height: 100vh; /* Full viewport height */
+            overflow: hidden;
+        }
+
+        .main-title {
+            text-align: center;
+            width: 100%;
+            background-color: #eee;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 24px;
+            color: #333;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f9f9f9; /* Lighter background for the sidebar */
+            border-right: 1px solid #ccc; /* Subtle separation from content */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto; /* Allows scrolling */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Adds shadow to the sidebar */
+        }
+
+        .sidebar h2 {
+            color: #333;
+        }
+
+        .sidebar p {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto; /* Allows scrolling inside the content area */
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-top: 10px;
+            display: block;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .options-container {
+            display: flex;
+            align-items: center;
+            border: 2px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .option {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #5B2C6F; /* Dark purple */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4A235A; /* Slightly darker purple */
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <p>Web Search</p>
+        <p>Placeholder</p> <!-- New menu item -->
+    </div>
+    <div class="content">
+        <div class="main-title">Web Search Prototype</div>
+
+        <h2>Upload Document for Indexing</h2>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="document">Document:</label>
+            <input type="file" id="document" name="document"><br><br>
+            <input type="submit" value="Upload">
+        </form>
+
+        <h2>Input Your Query</h2>
+        <form action="/search" method="post" enctype="multipart/form-data">
+            <label for="query">Query:</label>
+            <input type="text" id="query" name="query"><br><br>
+
+            <div class="options-container">
+                <div class="option">
+                    <input type="radio" id="web" name="options" value="web">
+                    <label for="web">Web</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="document" name="options" value="document">
+                    <label for="document">Document</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="all" name="options" value="all" checked>
+                    <label for="all">All</label>
+                </div>
+            </div><br>
+
+            <input type="submit" value="Submit">
+        </form>
+
+    </div>
+</body>
+</html>
