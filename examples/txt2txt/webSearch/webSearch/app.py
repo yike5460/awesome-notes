@@ -55,8 +55,8 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 # Before that you need to have Elasticsearch running locally
 """
 Initialization"
-$ docker stop $(docker ps -a -q)
-$ docker rm $(docker ps -a -q)
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
 
 Launch without SSL:
 docker run -d -p 9200:9200 -p 9300:9300 \
