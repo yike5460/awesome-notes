@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # load_and_transform_dataset()
     
     # upload dataset to s3
-    upload_dataset_to_s3("delete-me-jack-us-east-1", "fine-tune/train-summarization.jsonl")
+    upload_dataset_to_s3("train-summarization.jsonl", "delete-me-jack-us-east-1", "fine-tune/train-summarization.jsonl")
 
     # validate available models
     # validate_models()

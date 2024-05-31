@@ -11,3 +11,5 @@ Basic steps according to video [here](https://www.youtube.com/watch?v=SdTWlQPy1j
 - Fine-Tune the Model: Use Amazon Bedrock to train the base model on your dataset. This process adapts the model to better understand and generate outputs based on your specific data.
 - Access the Custom Model through AWS Console or SDK: After fine-tuning, your custom model is accessible for use. You can interact with it either through the AWS Console or programmatically via the AWS SDK (Boto3).
 - Provision Throughputs: Before using your custom model, you need to purchase provision throughputs. This step is necessary for deploying your model for actual use.
+
+## Quick Start with OpenAI
