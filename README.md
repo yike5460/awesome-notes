@@ -81,5 +81,3 @@
 ## Contributing
 
 ## License
-
-This is the content added by LangChain Agent and GitHub App automatically with all the {Observation}, {Thought}, {Action Input} and {Action} recorded
