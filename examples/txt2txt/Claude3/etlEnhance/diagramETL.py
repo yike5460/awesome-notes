@@ -57,7 +57,7 @@ Your task is to analyze a workflow diagram in an image and provide a detailed de
 
 Follow these steps:
 
-1. Describe the workflow in detail, including all the steps and their relationships, determine which Mermaid chart template (flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, pie) best represents the workflow.
+1. Describe the workflow in detail, including all the steps and their relationships, determine which Mermaid chart template (flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, erDiagram, xychart-beta) best represents the workflow.
 2. Extract the objects (steps, decisions, etc.) and their relationships from the workflow.
 3. Use the extracted information to generate the corresponding Mermaid chart code, ensuring generated code strictly follow the Mermaid syntax, e.g. enclosing the node labels in double quotes to ensure that Mermaid correctly interprets the entire label as a single entity, avoiding the parse errors caused by special characters.
 
@@ -73,11 +73,12 @@ Your response should be structured as follows:
 
 ## Use examples
 
-Below are examples of workflow diagrams covering all the typical type of mermaid templates, including flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt and pie. Each example includes a detailed description of the workflow along with Mermaid chart codes. Use these examples as reference when analyzing the workflow diagram in the image.
+Below are examples of workflow diagrams covering all the typical type of mermaid templates, including flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, pie and erDiagram. Each example includes a detailed description of the workflow along with Mermaid chart codes. Use these examples as reference when analyzing the workflow diagram in the image.
 
 <example>
+
 <description>
-This workflow diagram represents the process ofThis workflow diagram represents the process of evaluating and selecting an option based on certain conditions. The workflow begins with the "Start" node, which transitions to a step labeled "Some text." From there, the process continues to the "Continue" node.
+This flow chart represents the process of evaluating and selecting an option based on certain conditions. The workflow begins with the "Start" node, which transitions to a step labeled "Some text." From there, the process continues to the "Continue" node.
 
 After continuing, the process reaches the "Evaluate" decision diamond, which branches out into three possible paths:
 
@@ -97,7 +98,7 @@ flowchart LR
 </mermaid>
 
 <description>
-This workflow diagram represents the process of a communication exchange between two individuals, Alice and John. The interaction proceeds as follows:
+This sequence diagram represents the process of a communication exchange between two individuals, Alice and John. The interaction proceeds as follows:
 
 Alice initiates the conversation by sending a message to John: "Hello John, how are you?"
 Alice sends another message to John: "John, can you hear me?"
@@ -115,7 +116,7 @@ sequenceDiagram
 </mermaid>
 
 <description>
-This workflow diagram represents the process of the Industrial Revolution, detailing its evolution through different phases and technological advancements. The timeline is divided into two main periods: the 17th-20th century and the 21st century.
+This timeline diagram represents the process of the Industrial Revolution, detailing its evolution through different phases and technological advancements. The timeline is divided into two main periods: the 17th-20th century and the 21st century.
 
 1. **17th-20th Century**:
    - **Industry 1.0**: Characterized by the use of machinery, water power, and steam power.
@@ -142,7 +143,7 @@ timeline
 </mermaid>
 
 <description>
-This workflow diagram represents the process of class inheritance in object-oriented programming, specifically illustrating the relationship between a base class "Animal" and its derived classes "Duck," "Fish," and "Zebra." The diagram is structured as follows:
+This class diagram represents the process of class inheritance in object-oriented programming, specifically illustrating the relationship between a base class "Animal" and its derived classes "Duck," "Fish," and "Zebra." The diagram is structured as follows:
 
 1. **Base Class: Animal**
    - Attributes:
@@ -172,7 +173,7 @@ This workflow diagram represents the process of class inheritance in object-orie
      - Methods:
        - `+run()`: A method to enable the zebra to run.
 
-The diagram uses arrows to indicate inheritance, showing that "Duck," "Fish," and "Zebra" inherit from the "Animal" class. Each derived class has its own specific attributes and methods in addition to those inherited from the base class.
+The class diagram uses arrows to indicate inheritance, showing that "Duck," "Fish," and "Zebra" inherit from the "Animal" class. Each derived class has its own specific attributes and methods in addition to those inherited from the base class.
 </description>
 
 <mermaid>
@@ -200,7 +201,7 @@ classDiagram
 </mermaid>
 
 <description>
-This workflow diagram represents the process of state transitions for an object, such as a vehicle, through different states: Still, Moving, and Crash.
+This state diagram represents the process of state transitions for an object, such as a vehicle, through different states: Still, Moving, and Crash.
 
 1. **Start State**:
    - The diagram begins with a filled black circle, indicating the initial state.
@@ -234,7 +235,7 @@ stateDiagram
 </mermaid>
 
 <description>
-This workflow diagram represents the process of task scheduling and progress tracking using a Gantt chart. The chart visually outlines tasks over a specified time period, highlighting their start and end dates as well as their duration.
+This gantt diagram represents the process of task scheduling and progress tracking using a Gantt chart. The chart visually outlines tasks over a specified time period, highlighting their start and end dates as well as their duration.
 
 1. **Sections**:
    - The chart is divided into two main sections: "Section" and "Another."
@@ -265,30 +266,80 @@ gantt
 </mermaid>
 
 <description>
-This workflow diagram represents the process of pet adoption by volunteers, illustrating the distribution of different types of pets adopted. The diagram is a pie chart with the following details:
+This entity relationship diagram represents the process of order management, illustrating the relationships between different entities involved in placing and processing an order. The diagram includes the following components and interactions:
 
-Title:
+Entities:
 
-"Pets adopted by volunteers"
-Categories:
+CUSTOMER: The individual who places the order.
+DELIVERY-ADDRESS: The address where the order will be delivered.
+ORDER: The request made by the customer to purchase products.
+INVOICE: The bill issued for the order.
+PRODUCT-CATEGORY: The classification of products.
+PRODUCT: The items that are ordered.
+ORDER-ITEM: The specific items included in the order.
+Relationships:
 
-Dogs: Represented by a large section of the pie chart, accounting for 79% of the total adoptions.
-Cats: Represented by a mid-sized section, accounting for 17% of the total adoptions.
-Rats: Represented by a small section, accounting for 3% of the total adoptions.
-Legend:
-
-The legend on the right side of the chart uses different shades of green to differentiate between the categories:
-Light green for Dogs.
-Medium green for Cats.
-Dark green for Rats.
-The pie chart visually demonstrates the proportion of each type of pet adopted by volunteers, with the majority being dogs, followed by cats and a small percentage of rats.
+CUSTOMER:
+Places an order (places).
+Has a delivery address (has).
+Is liable for the invoice (liable for).
+DELIVERY-ADDRESS:
+Receives the order (receives).
+ORDER:
+Includes order items (includes).
+Is covered by the invoice (covers).
+INVOICE:
+Covers the order (covers).
+PRODUCT-CATEGORY:
+Contains products (contains).
+PRODUCT:
+Is ordered in order items (ordered in).
+ORDER-ITEM:
+Is included in the order (includes).
+The entity relationship uses arrows to show the direction of relationships and interactions between these entities, providing a clear visual representation of the order management process. Each entity is represented by a green box, and the relationships are labeled with descriptive text to explain the nature of the interaction.
 </description>
 
 <mermaid>
-pie title Pets adopted by volunteers
-    "Dogs" : 386
-    "Cats" : 85
-    "Rats" : 15
+erDiagram
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : has
+    CUSTOMER ||--o{ ORDER : places
+    CUSTOMER ||--o{ INVOICE : "liable for"
+    DELIVERY-ADDRESS ||--o{ ORDER : receives
+    INVOICE ||--|{ ORDER : covers
+    ORDER ||--|{ ORDER-ITEM : includes
+    PRODUCT-CATEGORY ||--|{ PRODUCT : contains
+    PRODUCT ||--o{ ORDER-ITEM : "ordered in"
+</mermaid>
+
+<description>
+This xy chart represents the process of tracking sales revenue over the course of a year. The chart combines a bar graph and a line graph to illustrate monthly revenue figures.
+
+1. **Title**:
+   - "Sales Revenue"
+
+2. **Axes**:
+   - **Vertical Axis** (Y-axis): Represents revenue in dollars ($), with increments of 500, ranging from 4000 to 11000.
+   - **Horizontal Axis** (X-axis): Represents the months of the year, from January (jan) to December (dec).
+
+3. **Data Representation**:
+   - **Bar Graph**: The green bars represent the revenue for each month. The height of each bar corresponds to the revenue amount.
+   - **Line Graph**: A red line connects the top of each bar, providing a visual representation of the trend in revenue over the year.
+
+4. **Monthly Revenue**:
+   - The revenue starts at around $5000 in January.
+   - It increases steadily each month, peaking in July at around $10500.
+   - After July, the revenue begins to decline, reaching approximately $4500 in December.
+
+The xy chart clearly shows the seasonal trend in sales revenue, with a significant increase during the middle of the year and a decline towards the end. This visual representation helps in understanding the monthly performance and identifying peak revenue periods.
+</description>
+
+<mermaid>
+xychart-beta
+    title "Sales Revenue"
+    x-axis [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec]
+    y-axis "Revenue (in $)" 4000 --> 11000
+    bar [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
+    line [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
 </mermaid>
 
 </example>
@@ -362,19 +413,22 @@ original character...
 
 """
 if __name__ == "__main__":
-    image_path = "Web_Crawler.png"
-    try:
-        encoded_image = encode_image(image_path)
-        message = {
-            "role": "user",
-            "content": [
-                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": encoded_image}},
-                {"type": "text", "text": prompt_template}
-            ]
-        }
-        messages = [message]
-        response = run_multi_modal_prompt(bedrock_runtime, model_id, messages, max_tokens=4096)
-        if response and 'text' in response['content'][0]:
-            mermaid_code = extract_workflow_to_mermaid(response)
-    except ClientError as e:
-        logger.error(e)
+    # loop all the image file in the directory with png format to validate the ground truth of the workflow diagram
+    for image_path in os.listdir("images"):
+        if image_path.endswith(".png"):
+            try:
+                image_path = os.path.join("images", image_path)
+                encoded_image = encode_image(image_path)
+                message = {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": encoded_image}},
+                        {"type": "text", "text": orignal_template.format(image_data=encoded_image)}
+                    ]
+                }
+                messages = [message]
+                response = run_multi_modal_prompt(bedrock_runtime, model_id, messages, max_tokens=4096)
+                if response and 'text' in response['content'][0]:
+                    mermaid_code = extract_workflow_to_mermaid(response)
+            except ClientError as e:
+                logger.error(e)
