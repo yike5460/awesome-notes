@@ -337,6 +337,30 @@ def extract_workflow_to_mermaid(response):
     logger.info(f"Extracted Mermaid code: {mermaid_code}")
     return mermaid_code
 
+"""
+Note the schema of content we injected into the Amazon Open Search would be as follows, and we will use the summary & description text and original title to retrieve the representation of the workflow diagram.
+
+original character...
+...
+<image>
+<summary, description text>
+</image>
+Title 1, picture A
+
+<mermaid>
+<summary, description text>
+flowchart LR
+    A[Start] --Some text--> B(Continue)
+    B --> C{Evaluate}
+    C -- One --> D[Option 1]
+    C -- Two --> E[Option 2]
+    C -- Three --> F[fa:fa-car Option 3]
+</mermaid>
+Title 2 workflow B
+...
+original character...
+
+"""
 if __name__ == "__main__":
     image_path = "Web_Crawler.png"
     try:
