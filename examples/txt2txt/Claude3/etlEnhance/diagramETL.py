@@ -57,15 +57,14 @@ Your task is to analyze a workflow diagram in an image and provide a detailed de
 
 Follow these steps:
 
-1. Identify the content of the given image uploaded {placeholder}.
-2. Describe the workflow in detail, including all the steps and their relationships.
-3. Extract the objects (steps, decisions, etc.) and their relationships from the workflow.
-4. Use the extracted information to generate Mermaid chart code representing the workflow.
+1. Describe the workflow in detail, including all the steps and their relationships, determine which Mermaid chart template (flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, pie) best represents the workflow.
+2. Extract the objects (steps, decisions, etc.) and their relationships from the workflow.
+3. Use the extracted information to generate the corresponding Mermaid chart code, ensuring generated code strictly follow the Mermaid syntax, e.g. enclosing the node labels in double quotes to ensure that Mermaid correctly interprets the entire label as a single entity, avoiding the parse errors caused by special characters.
 
 Your response should be structured as follows:
 
 <description>
-[Detailed description of the workflow]
+[Detailed description of the workflow and Mermaid chart template selection]
 </description>
 
 <mermaid>
@@ -74,25 +73,224 @@ Your response should be structured as follows:
 
 ## Use examples
 
-Here is an example of how your response should be formatted:
+Below are examples of workflow diagrams covering all the typical type of mermaid templates, including flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt and pie. Each example includes a detailed description of the workflow along with Mermaid chart codes. Use these examples as reference when analyzing the workflow diagram in the image.
 
 <example>
 <description>
-This workflow diagram represents the process of ordering food at a restaurant. It starts with a customer entering the restaurant and being seated by the host. The server then takes the customer's order and passes it to the kitchen. The kitchen prepares the food and sends it back to the server, who delivers it to the customer. After the customer finishes their meal, they pay the bill and leave the restaurant.
+This workflow diagram represents the process ofThis workflow diagram represents the process of evaluating and selecting an option based on certain conditions. The workflow begins with the "Start" node, which transitions to a step labeled "Some text." From there, the process continues to the "Continue" node.
+
+After continuing, the process reaches the "Evaluate" decision diamond, which branches out into three possible paths:
+
+If the condition "One" is met, the workflow proceeds to "Option 1."
+If the condition "Two" is met, the workflow proceeds to "Option 2."
+If the condition "Three" is met, the workflow proceeds to "Option 3."
+Each option represents a different outcome based on the evaluation criteria.
 </description>
 
 <mermaid>
-graph TD
-    A[Customer enters restaurant] --> B[Seated by host]
-    B --> C[Server takes order]
-    C --> D[Order passed to kitchen]
-    D --> E[Kitchen prepares food]
-    E --> F[Food sent back to server]
-    F --> G[Server delivers food to customer]
-    G --> H[Customer finishes meal]
-    H --> I[Customer pays bill]
-    I --> J[Customer leaves restaurant]
+flowchart LR
+    A[Start] --Some text--> B(Continue)
+    B --> C{Evaluate}
+    C -- One --> D[Option 1]
+    C -- Two --> E[Option 2]
+    C -- Three --> F[fa:fa-car Option 3]
 </mermaid>
+
+<description>
+This workflow diagram represents the process of a communication exchange between two individuals, Alice and John. The interaction proceeds as follows:
+
+Alice initiates the conversation by sending a message to John: "Hello John, how are you?"
+Alice sends another message to John: "John, can you hear me?"
+John responds to Alice with: "Hi Alice, I can hear you!"
+John follows up with another message: "I feel great!"
+The diagram illustrates a sequence of messages exchanged between Alice and John, highlighting their communication flow.
+</description>
+
+<mermaid>
+sequenceDiagram
+    Alice->>+John: Hello John, how are you?
+    Alice->>+John: John, can you hear me?
+    John-->>-Alice: Hi Alice, I can hear you!
+    John-->>-Alice: I feel great!
+</mermaid>
+
+<description>
+This workflow diagram represents the process of the Industrial Revolution, detailing its evolution through different phases and technological advancements. The timeline is divided into two main periods: the 17th-20th century and the 21st century.
+
+1. **17th-20th Century**:
+   - **Industry 1.0**: Characterized by the use of machinery, water power, and steam power.
+   - **Industry 2.0**: Marked by the advent of electricity, internal combustion engines, and mass production techniques.
+
+2. **21st Century**:
+   - **Industry 3.0**: Defined by the development and integration of electronics, computers, and automation.
+   - **Industry 4.0**: Focuses on the Internet, robotics, and the Internet of Things (IoT).
+   - **Industry 5.0**: Encompasses advancements in artificial intelligence, big data, and 3D printing.
+
+The diagram uses vertical dotted lines to connect each industry phase with its corresponding technological innovations, illustrating the progression and transformation of industrial capabilities over time.
+</description>
+
+<mermaid>
+timeline
+    title Timeline of Industrial Revolution
+    section 17th-20th century
+        Industry 1.0 : Machinery, Water power, Steam <br>power
+        Industry 2.0 : Electricity, Internal combustion engine, Mass production
+        Industry 3.0 : Electronics, Computers, Automation
+    section 21st century
+        Industry 4.0 : Internet, Robotics, Internet of Things
+        Industry 5.0 : Artificial intelligence, Big data,3D printing
+</mermaid>
+
+<description>
+This workflow diagram represents the process of class inheritance in object-oriented programming, specifically illustrating the relationship between a base class "Animal" and its derived classes "Duck," "Fish," and "Zebra." The diagram is structured as follows:
+
+1. **Base Class: Animal**
+   - Attributes:
+     - `+int age`: An integer representing the age of the animal.
+     - `+String gender`: A string representing the gender of the animal.
+   - Methods:
+     - `+isMammal()`: A method to check if the animal is a mammal.
+     - `+mate()`: A method to handle the mating behavior of the animal.
+
+2. **Derived Classes:**
+   - **Duck**
+     - Attributes:
+       - `+String beakColor`: A string representing the color of the duck's beak.
+     - Methods:
+       - `+swim()`: A method to enable the duck to swim.
+       - `+quack()`: A method to enable the duck to quack.
+   
+   - **Fish**
+     - Attributes:
+       - `-int sizeInFeet`: An integer representing the size of the fish in feet.
+     - Methods:
+       - `-canEat()`: A method to determine if the fish can eat.
+   
+   - **Zebra**
+     - Attributes:
+       - `+bool is_wild`: A boolean indicating if the zebra is wild.
+     - Methods:
+       - `+run()`: A method to enable the zebra to run.
+
+The diagram uses arrows to indicate inheritance, showing that "Duck," "Fish," and "Zebra" inherit from the "Animal" class. Each derived class has its own specific attributes and methods in addition to those inherited from the base class.
+</description>
+
+<mermaid>
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Duck{
+      +String beakColor
+      +swim()
+      +quack()
+    }
+    class Fish{
+      -int sizeInFeet
+      -canEat()
+    }
+    class Zebra{
+      +bool is_wild
+      +run()
+    }
+</mermaid>
+
+<description>
+This workflow diagram represents the process of state transitions for an object, such as a vehicle, through different states: Still, Moving, and Crash.
+
+1. **Start State**:
+   - The diagram begins with a filled black circle, indicating the initial state.
+
+2. **Still State**:
+   - The object starts in the "Still" state.
+   - From the "Still" state, the object can transition to the "Moving" state.
+
+3. **Moving State**:
+   - Once in the "Moving" state, the object can either:
+     - Transition back to the "Still" state.
+     - Proceed to the "Crash" state.
+
+4. **Crash State**:
+   - In the "Crash" state, the object can transition back to the "Still" state.
+
+5. **End State**:
+   - The diagram concludes with a circle containing a smaller filled circle, indicating the final state.
+
+The arrows indicate the possible transitions between these states, illustrating how the object can move from one state to another based on certain conditions or events.
+</description>
+
+<mermaid>
+stateDiagram
+    [*] --> Still
+    Still --> [*]
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+</mermaid>
+
+<description>
+This workflow diagram represents the process of task scheduling and progress tracking using a Gantt chart. The chart visually outlines tasks over a specified time period, highlighting their start and end dates as well as their duration.
+
+1. **Sections**:
+   - The chart is divided into two main sections: "Section" and "Another."
+
+2. **Tasks in Section**:
+   - **A task**: Spans from January 5, 2014, to February 2, 2014.
+   - **Task in sec**: Starts on January 12, 2014, and ends on February 2, 2014.
+
+3. **Tasks in Another**:
+   - **another task**: Begins on January 5, 2014, and concludes on February 16, 2014.
+
+4. **Timeline**:
+   - The timeline at the bottom of the chart marks important dates, such as January 5, 2014, January 12, 2014, January 19, 2014, January 26, 2014, February 2, 2014, February 9, 2014, and February 16, 2014.
+
+The Gantt chart uses horizontal bars to represent the duration of each task, with the length of each bar corresponding to the time span of the task. The interactions between tasks are indicated by their relative positions and overlaps on the timeline, providing a clear visual representation of the project schedule and dependencies.
+</description>
+
+<mermaid>
+gantt
+    title A Gantt Diagram
+    dateFormat  YYYY-MM-DD
+    section Section
+    A task           :a1, 2014-01-01, 30d
+    Another task     :after a1  , 20d
+    section Another
+    Task in sec      :2014-01-12  , 12d
+    another task      : 24d
+</mermaid>
+
+<description>
+This workflow diagram represents the process of pet adoption by volunteers, illustrating the distribution of different types of pets adopted. The diagram is a pie chart with the following details:
+
+Title:
+
+"Pets adopted by volunteers"
+Categories:
+
+Dogs: Represented by a large section of the pie chart, accounting for 79% of the total adoptions.
+Cats: Represented by a mid-sized section, accounting for 17% of the total adoptions.
+Rats: Represented by a small section, accounting for 3% of the total adoptions.
+Legend:
+
+The legend on the right side of the chart uses different shades of green to differentiate between the categories:
+Light green for Dogs.
+Medium green for Cats.
+Dark green for Rats.
+The pie chart visually demonstrates the proportion of each type of pet adopted by volunteers, with the majority being dogs, followed by cats and a small percentage of rats.
+</description>
+
+<mermaid>
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+</mermaid>
+
 </example>
 
 </instruction_guide>
@@ -140,14 +338,14 @@ def extract_workflow_to_mermaid(response):
     return mermaid_code
 
 if __name__ == "__main__":
-    image_path = "Web-Crawler.png"
+    image_path = "Web_Crawler.png"
     try:
         encoded_image = encode_image(image_path)
         message = {
             "role": "user",
             "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": encoded_image}},
-                {"type": "text", "text": prompt_template.format(placeholder="")}
+                {"type": "text", "text": prompt_template}
             ]
         }
         messages = [message]
