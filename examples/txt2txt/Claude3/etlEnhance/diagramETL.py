@@ -57,7 +57,7 @@ Your task is to analyze a workflow diagram in an image and provide a detailed de
 
 Follow these steps:
 
-1. Describe the workflow in detail, including all the steps and their relationships, determine which Mermaid chart template (flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, erDiagram, xychart-beta) best represents the workflow.
+1. Describe the workflow in detail, including all the steps and their relationships, determine which Mermaid chart template (flowchart, sequenceDiagram, timeline, classDiagram, stateDiagram, gantt, erDiagram, xychart-beta, pie, quadrantChart) best represents the workflow.
 2. Extract the objects (steps, decisions, etc.) and their relationships from the workflow.
 3. Use the extracted information to generate the corresponding Mermaid chart code, ensuring generated code strictly follow the Mermaid syntax, e.g. enclosing the node labels in double quotes to ensure that Mermaid correctly interprets the entire label as a single entity, avoiding the parse errors caused by special characters.
 
@@ -341,6 +341,83 @@ xychart-beta
     bar [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
     line [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
 </mermaid>
+
+<description>
+This pie chart represents the process of pet adoption by volunteers, illustrating the distribution of different types of pets adopted. The diagram is a pie chart with the following details:
+
+Title:
+
+"Pets adopted by volunteers"
+Categories:
+
+Dogs: Represented by a large section of the pie chart, accounting for 79% of the total adoptions.
+Cats: Represented by a mid-sized section, accounting for 17% of the total adoptions.
+Rats: Represented by a small section, accounting for 3% of the total adoptions.
+Legend:
+
+The legend on the right side of the chart uses different shades of green to differentiate between the categories:
+Light green for Dogs.
+Medium green for Cats.
+Dark green for Rats.
+The pie chart visually demonstrates the proportion of each type of pet adopted by volunteers, with the majority being dogs, followed by cats and a small percentage of rats.
+</description>
+
+<mermaid>
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+</mermaid>
+
+<description>
+This quadrant chart represents the process of evaluating the reach and engagement of various campaigns that categorizes campaigns based on their reach (horizontal axis) and engagement (vertical axis). The chart is divided into four quadrants, each representing a different strategy for the campaigns:
+
+1. **Quadrants**:
+    - **Need to promote** (High Engagement, Low Reach):
+        - Campaign F
+        - Campaign A
+    - **We should expand** (High Engagement, High Reach):
+        - Campaign C
+    - **Re-evaluate** (Low Engagement, Low Reach):
+        - Campaign E
+        - Campaign B
+    - **May be improved** (Low Engagement, High Reach):
+        - Campaign D
+
+2. **Axes**:
+    - **Vertical Axis**: Represents Engagement, ranging from Low Engagement at the bottom to High Engagement at the top.
+    - **Horizontal Axis**: Represents Reach, ranging from Low Reach on the left to High Reach on the right.
+
+3. **Campaigns**:
+    - Each campaign is represented by a black dot and labeled accordingly:
+        - Campaign A, B, C, D, E, and F.
+
+4. **Labels**:
+    - Each quadrant is labeled to indicate the suggested action for the campaigns within it:
+        - "Need to promote" for campaigns with high engagement but low reach.
+        - "We should expand" for campaigns with both high engagement and high reach.
+        - "Re-evaluate" for campaigns with both low engagement and low reach.
+        - "May be improved" for campaigns with high reach but low engagement.
+
+The quadrant chart visually demonstrates the performance of each campaign in terms of reach and engagement, helping to identify which campaigns need more promotion, which should be expanded, which need re-evaluation, and which may be improved.
+</description>
+
+<mermaid>
+quadrantChart
+    title Reach and engagement of campaigns
+    x-axis Low Reach --> High Reach
+    y-axis Low Engagement --> High Engagement
+    quadrant-1 We should expand
+    quadrant-2 Need to promote
+    quadrant-3 Re-evaluate
+    quadrant-4 May be improved
+    Campaign A: [0.3, 0.6]
+    Campaign B: [0.45, 0.23]
+    Campaign C: [0.57, 0.69]
+    Campaign D: [0.78, 0.34]
+    Campaign E: [0.40, 0.34]
+    Campaign F: [0.35, 0.78]
+</mermaid>    
 
 </example>
 
