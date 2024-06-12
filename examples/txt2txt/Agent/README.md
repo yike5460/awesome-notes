@@ -81,6 +81,105 @@ stateDiagram-v2
     give_final_response --> [*]: End
     qq_matched_reply --> [*]: End
 ```
+Option 1:
+Add model registry, Service Monitor and Circuit Breaker only in existing workflow
+```mermaid
+stateDiagram-v2
+    [*] --> query_preprocess_lambda: Entry Point
+    query_preprocess_lambda --> intention_detection_lambda: Route to Agent
+    query_preprocess_lambda --> chat_llm_generate_lambda: Route to Chat
+    query_preprocess_lambda --> rag_retrieve_lambda: Route to RAG
+
+    intention_detection_lambda --> agent_lambda: Route to Agent
+    intention_detection_lambda --> qq_matched_reply: Route to QQ Matched Reply
+
+    agent_lambda --> parse_tool_calling: Route to Parse Tool Calling
+
+    parse_tool_calling --> agent_lambda: Invalid Tool Calling
+    parse_tool_calling --> give_final_response: Give Final Response
+    parse_tool_calling --> give_rhetorical_question: Give Rhetorical Question
+    parse_tool_calling --> comfort_reply: Comfort
+    parse_tool_calling --> transfer_reply: Transfer
+    parse_tool_calling --> chat_llm_generate_lambda: Chat
+    parse_tool_calling --> rag_retrieve_lambda: RAG
+    parse_tool_calling --> tool_execute_lambda: Continue
+
+    tool_execute_lambda --> agent_lambda: Execute Tool
+
+    rag_retrieve_lambda --> rag_llm_lambda: Retrieve RAG
+    rag_llm_lambda --> [*]: End
+
+    comfort_reply --> [*]: End
+    transfer_reply --> [*]: End
+    chat_llm_generate_lambda --> [*]: End
+    give_rhetorical_question --> [*]: End
+    give_final_response --> [*]: End
+    qq_matched_reply --> [*]: End
+
+    %% Integrating Model Registry, Service Monitor, and Circuit Breaker
+    state "Agent Orchestration" as AO {
+        [*] --> CircuitBreaker: Check Invocation Loop
+        CircuitBreaker --> ServiceMonitor: Check Service Availability
+        ServiceMonitor --> ModelRegistry: Fetch Model Info
+        ModelRegistry --> AgentLambda: Dispatch to Agent
+    }
+
+    parse_tool_calling --> AO: Internal Iteration Process
+    AO --> agent_lambda: Continue to Agent
+```
+
+Option 2:
+Combine both workflow sequentially 
+```mermaid
+stateDiagram-v2
+    [*] --> RequestHandler: Entry Point
+    RequestHandler --> Analyzer: Parse and Analyze Request
+    Analyzer --> AgentDispatcher: Identify Intent
+    AgentDispatcher --> ModelRegistry: Fetch Model Info
+    ModelRegistry --> AgentDispatcher: Return Model Info
+    AgentDispatcher --> ServiceMonitor: Check Service Availability
+    ServiceMonitor --> AgentDispatcher: Service Available
+    AgentDispatcher --> AgentOrchestrator: Dispatch to Agent
+
+    state AgentOrchestrator {
+        [*] --> query_preprocess_lambda: Entry Point
+        query_preprocess_lambda --> intention_detection_lambda: Route to Agent
+        query_preprocess_lambda --> chat_llm_generate_lambda: Route to Chat
+        query_preprocess_lambda --> rag_retrieve_lambda: Route to RAG
+
+        intention_detection_lambda --> agent_lambda: Route to Agent
+        intention_detection_lambda --> qq_matched_reply: Route to QQ Matched Reply
+
+        agent_lambda --> parse_tool_calling: Route to Parse Tool Calling
+
+        parse_tool_calling --> agent_lambda: Invalid Tool Calling
+        parse_tool_calling --> give_final_response: Give Final Response
+        parse_tool_calling --> give_rhetorical_question: Give Rhetorical Question
+        parse_tool_calling --> comfort_reply: Comfort
+        parse_tool_calling --> transfer_reply: Transfer
+        parse_tool_calling --> chat_llm_generate_lambda: Chat
+        parse_tool_calling --> rag_retrieve_lambda: RAG
+        parse_tool_calling --> tool_execute_lambda: Continue
+
+        tool_execute_lambda --> agent_lambda: Execute Tool
+
+        rag_retrieve_lambda --> rag_llm_lambda: Retrieve RAG
+        rag_llm_lambda --> [*]: End
+
+        comfort_reply --> [*]: End
+        transfer_reply --> [*]: End
+        chat_llm_generate_lambda --> [*]: End
+        give_rhetorical_question --> [*]: End
+        give_final_response --> [*]: End
+        qq_matched_reply --> [*]: End
+    }
+
+    AgentOrchestrator --> CircuitBreaker: Check Invocation Loop
+    CircuitBreaker --> AgentOrchestrator: Invocation Safe
+    AgentOrchestrator --> Logger: Log Dispatch Info
+    Logger --> AgentOrchestrator: Logging Complete
+    AgentOrchestrator --> [*]: Return Final Result
+```
 
 Sample code for new Agent Router:
 ```python
@@ -224,10 +323,3 @@ if __name__ == "__main__":
     response = agent_router.handle_request(user_input)
     print(response)
 ```
-
-- Model quantization technical stack e.g. llama.cpp, exllamav2
-
-- Enhanced data extraction include Excel, Diagram
-
-- Mindset using "Software Architecture and Decision Making"
-
