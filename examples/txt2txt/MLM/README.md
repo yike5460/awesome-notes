@@ -29,8 +29,6 @@ Brief workflow of the MLM module:
 
 Below are the Mermaid code and the corresponding diagram for the overall workflow of the MLM module:
 
-![Workflow](img/MLM.png)
-
 ```mermaid
 sequenceDiagram
     participant Client as Client App/UI
@@ -60,3 +58,14 @@ sequenceDiagram
 The MLM module will expose a set of RESTful APIs conforming to the OpenAPI specification. The OpenAPI specification will define the API paths, methods, request/response schemas, and security requirements. The OpenAPI specification will be used to generate client SDKs and server stubs for easy integration with client applications and UI.
 
 Refer to the [OpenAPI Specification](docs/OpenAPI_v1.1.yaml) for the detailed API definitions and Postman compatible [collection](docs/postman_collection_v1.1.json) to import and test the APIs directly.
+
+## Extent to MaaS (Model as a Service)
+Refer to MLM considering model registry, and consider the possibility to evolve to MaaS (Model as a Service), core features should be included:
+* Model Efficiency, accelerate inference with hardware (customized chip) and software (optimized operator, model quantisation etc.)
+    * do we know top 3 techniques are used in consideration for its maturity, performance and eco-system?
+    * can we implement the top 3 techniques prototype and commercialization with automation, low code etc.
+* Data Privacy, multi-tenancy with least privilege 
+* Model Lifecycle Management, CRUD operation on model, dataset and associate infrastructure (SageMaker Endpoint)
+* Model Evaluation, explainable AI with objective metric and evaluation method (e.g. RAGAS) 
+* Full fledge RESTful API and multi-language SDK
+
