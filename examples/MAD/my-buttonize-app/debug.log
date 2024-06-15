@@ -1,0 +1,2 @@
+2024-06-06T01:20:04.469Z     +1ms [debug] Encountered error when searching for Role External ID {} Role: ["DemoAppExecutionRole7B4898C7","Arn"]
+ exist","code":"ValidationError","time":"2024-06-06T01:20:04.468Z","requestId":"c9cb51b0-0fbc-45c7-8fa1-52a70ab78d22","statusCode":400,"retryable":false,"retryDelay":365.783620822735}
