@@ -81,8 +81,13 @@ graph TD
     H --> I[Output to User Interface]
 ```
 
-## Sample Pseudo Code
-TODO
+## Application
+### Chat with GitHub
+Application "chat with GitHub" allow user to chat with specific GitHub repo, e.g. ask to generate the components of of such repo and how they interact with each other, list external dependencies & their usage in a table. The brief implemntation mindset are below:
+(1) Using Flask as the main UI component to interact with users e.g. input the url address in the textbox and output the response accordingly;
+(2) clone the whole specific repo and use bash script to dump the raw contents into one file;
+(3) Using GPT or Claude to generate ways to understand the code repo;
+(4) Feed the contents along with use chats to Gemini 1.5 Pro, with a huge 2M token context window, to get the final results.
 
 ## Enhancement Ideas
 1. Implement the agent along with web search capabilities for specific domains like caculation, calendar, etc. since web search can be regard as specific application of agent tools.

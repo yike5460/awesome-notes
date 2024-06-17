@@ -110,47 +110,103 @@
         input[type="submit"]:hover {
             background-color: #4A235A; /* Slightly darker purple */
         }
+
+        .markdown-output {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
         <h2>Menu</h2>
-        <p>Web Search</p>
-        <p>Placeholder</p> <!-- New menu item -->
+        <p onclick="showTab('web-search')">Web Search</p>
+        <p onclick="showTab('github-chat')">GitHub Chat</p>
     </div>
     <div class="content">
         <div class="main-title">Web Search Prototype</div>
 
-        <h2>Upload Document for Indexing</h2>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <label for="document">Document:</label>
-            <input type="file" id="document" name="document"><br><br>
-            <input type="submit" value="Upload">
-        </form>
+        <div id="web-search" class="tab-content">
+            <h2>Upload Document for Indexing</h2>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label for="document">Document:</label>
+                <input type="file" id="document" name="document"><br><br>
+                <input type="submit" value="Upload">
+            </form>
 
-        <h2>Input Your Query</h2>
-        <form action="/search" method="post" enctype="multipart/form-data">
-            <label for="query">Query:</label>
-            <input type="text" id="query" name="query"><br><br>
+            <h2>Input Your Query</h2>
+            <form action="/search" method="post" enctype="multipart/form-data">
+                <label for="query">Query:</label>
+                <input type="text" id="query" name="query"><br><br>
 
-            <div class="options-container">
-                <div class="option">
-                    <input type="radio" id="web" name="options" value="web">
-                    <label for="web">Web</label>
-                </div>
-                <div class="option">
-                    <input type="radio" id="document" name="options" value="document">
-                    <label for="document">Document</label>
-                </div>
-                <div class="option">
-                    <input type="radio" id="all" name="options" value="all" checked>
-                    <label for="all">All</label>
-                </div>
-            </div><br>
+                <div class="options-container">
+                    <div class="option">
+                        <input type="radio" id="web" name="options" value="web">
+                        <label for="web">Web</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="document" name="options" value="document">
+                        <label for="document">Document</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" id="all" name="options" value="all" checked>
+                        <label for="all">All</label>
+                    </div>
+                </div><br>
 
-            <input type="submit" value="Submit">
-        </form>
+                <input type="submit" value="Submit">
+            </form>
+        </div>
 
+        <div id="github-chat" class="tab-content" style="display:none;">
+            <h2>Process GitHub Repository</h2>
+            <form id="process-repo-form" action="/process_repo" method="post">
+                <label for="repo-url">GitHub Repository URL:</label>
+                <input type="text" id="repo-url" name="repo_url" required><br><br>
+                <input type="submit" value="Process">
+            </form>
+
+            <h2>Chat with Repository</h2>
+            <form id="chat-repo-form" action="/chat_repo" method="post">
+                <label for="repo-query">Query:</label>
+                <input type="text" id="repo-query" name="repo_query" required><br><br>
+                <input type="submit" value="Ask">
+            </form>
+
+            <div id="response-output" class="markdown-output"></div>
+        </div>
     </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.getElementById(tabId).style.display = 'block';
+        }
+
+        document.getElementById('chat-repo-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const repoUrl = document.getElementById('repo-url').value;
+            const repoQuery = document.getElementById('repo-query').value;
+
+            fetch('/chat_repo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ repo_url: repoUrl, repo_query: repoQuery })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseOutput = document.getElementById('response-output');
+                responseOutput.innerHTML = marked.parse(data.response);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,9 +1,17 @@
 # Import necessary libraries
+import os
 import logging
-# import os
+import subprocess
 
+import textwrap
 import requests
 import spacy
+import openai
+import google.generativeai as genai
+
+from IPython.display import display
+from IPython.display import Markdown
+
 from bs4 import BeautifulSoup
 from docx import Document
 from dotenv import load_dotenv
@@ -14,6 +22,9 @@ from PyPDF2 import PdfReader
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 load_dotenv()
+
+genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 # Read from local env file
 # API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -109,6 +120,56 @@ es = Elasticsearch(
 def home():
     return render_template("main_page.html")
 
+def to_markdown(text):
+  text = text.replace('•', '  *')
+  return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
+
+@app.route('/process_repo', methods=['POST'])
+def process_repo():
+    repo_url = request.form.get('repo_url')
+    if not repo_url:
+        return jsonify({'error': 'Repository URL is required'}), 400
+
+    # Clone the repository
+    clone_result = subprocess.run(['bash', 'scripts/clone_repo.sh', repo_url], capture_output=True, text=True)
+    # log the clone result
+    logger.debug(f"Clone result: {clone_result}")
+    if clone_result.returncode != 0:
+        return jsonify({'error': 'Failed to clone repository'}), 500
+
+    # Process the repository contents, we are using default options to dump the contents, refer to scripts/dump_contents.sh for more options
+    process_result = subprocess.run(['bash', 'scripts/dump_contents.sh'], capture_output=True, text=True)
+    if process_result.returncode != 0:
+        return jsonify({'error': 'Failed to process repository contents'}), 500
+
+    # Read the default dumped contents
+    with open('combined_code_dump.txt', 'r') as file:
+        repo_contents = file.read()
+
+    # Use GPT or Gemini to generate understanding of the repository contents
+    prompt = f"Analyze the following repository:\n{repo_contents}"
+    response = model.generate_content(prompt)
+
+    return jsonify({'response': to_markdown(response.text)})
+
+@app.route('/chat_repo', methods=['POST'])
+def chat_repo():
+    data = request.get_json()
+    repo_url = data.get('repo_url')
+    repo_query = data.get('repo_query')
+
+    if not repo_url or not repo_query:
+        return jsonify({'error': 'Repository URL and query are required'}), 400
+
+    # Read the dumped contents
+    with open('repository_contents.txt', 'r') as file:
+        repo_contents = file.read()
+
+    # Use GPT or Gemini to answer the query based on the repository contents
+    prompt = f"Based on the following repository contents, {repo_contents}, answer the query: {repo_query}"
+    response = model.generate_content(prompt)
+
+    return jsonify({'response': response.choices[0].text})
 
 # User Interface Route
 @app.route("/search", methods=["POST"])
