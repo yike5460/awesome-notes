@@ -14,11 +14,10 @@ if [[ ! "$REPO_URL" =~ ^https://github.com/[^/]+/[^/]+\.git$ ]]; then
     exit 2
 fi
 
-# Clone the repository
-if ! git clone "$REPO_URL" "$REPO_NAME"; then
-    echo "Failed to clone repository"
-    exit 3
-fi
+# Clone the repository if it doesn't already exist
+[ -d "$REPO_NAME" ] && echo "Repository already exists" && exit 0
+
+git clone "$REPO_URL" "$REPO_NAME" || echo "Failed to clone repository" && exit 3
 
 echo "Repository cloned successfully"
 exit 0

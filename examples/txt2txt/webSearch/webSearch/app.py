@@ -24,7 +24,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 load_dotenv()
 
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-model = genai.GenerativeModel('gemini-1.5-pro-latest')
+GeminiModel = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 # Read from local env file
 # API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -132,8 +132,8 @@ def process_repo():
 
     # Clone the repository
     clone_result = subprocess.run(['bash', 'scripts/clone_repo.sh', repo_url], capture_output=True, text=True)
-    # log the clone result
-    logger.debug(f"Clone result: {clone_result}")
+
+    # Schema alike CompletedProcess(args=['bash', 'scripts/clone_repo.sh', 'https://github.com/awslabs/aws-ai-solution-kit.git'], returncode=0, stdout='Repository cloned successfully\n', stderr="Cloning into 'aws-ai-solution-kit'...\n")
     if clone_result.returncode != 0:
         return jsonify({'error': 'Failed to clone repository'}), 500
 
@@ -147,10 +147,11 @@ def process_repo():
         repo_contents = file.read()
 
     # Use GPT or Gemini to generate understanding of the repository contents
-    prompt = f"Analyze the following repository:\n{repo_contents}"
-    response = model.generate_content(prompt)
+    # TODO: truncate the repo_contents to 1024*10 tokens to avoid the error: google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota).
+    prompt = f"Analyze the following repository:\n{repo_contents[:1024*10]}\n\nOutput the understanding of the repository contents."
+    response = GeminiModel.generate_content(prompt)
 
-    return jsonify({'response': to_markdown(response.text)})
+    return jsonify({'response': str(to_markdown(response.text))})
 
 @app.route('/chat_repo', methods=['POST'])
 def chat_repo():
@@ -166,8 +167,9 @@ def chat_repo():
         repo_contents = file.read()
 
     # Use GPT or Gemini to answer the query based on the repository contents
-    prompt = f"Based on the following repository contents, {repo_contents}, answer the query: {repo_query}"
-    response = model.generate_content(prompt)
+    # TODO: truncate the repo_contents to 1024*10 tokens to avoid the error: google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota).
+    prompt = f"Based on the following repository contents, {repo_contents[:1024*10]}, answer the query: {repo_query}"
+    response = GeminiModel.generate_content(prompt)
 
     return jsonify({'response': response.choices[0].text})
 
