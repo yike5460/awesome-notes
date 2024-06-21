@@ -1,0 +1,5 @@
+- Using [awscurl](https://github.com/okigan/awscurl) to make a request to the LMI [Large Model Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-container-docs.html) API
+- Exploration TGI, TensorRTLLM and VLLM
+- Metrics alike logprob
+- Dense/Parse/Multi-vector embeddings
+- Ray on EKS
