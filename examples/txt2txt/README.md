@@ -27,3 +27,72 @@ A: The dimensionality of embedding vectors does not have a simple linear relatio
 - Diminishing returns: There's often a point of diminishing returns, where increasing the embedding dimension beyond a certain point yields minimal or no improvement in performance.
 - Model architecture: The overall architecture of the model, not just the embedding dimension, plays a crucial role in determining performance.
 In practice, the choice of embedding dimension is often determined empirically through experimentation, considering factors such as model performance, computational resources, and the specific requirements of the task at hand. It's common to see embedding dimensions ranging from a few hundred to several thousand in modern language models, but the optimal size can vary widely depending on the application.
+
+Q: Self-attention implementation in transformer architecture 
+A: Detailed step by step with formulae:
+**Self-Attention Mechanism**
+
+Self-attention, also known as scaled dot-product attention, is a mechanism that allows a model to weigh the importance of different words in a sentence when processing a specific word. It helps the model understand the context by focusing on relevant words.
+
+**How Self-Attention Works**
+
+1. **Input Representation:**
+   - Each word in the input sequence is represented as a vector. For simplicity, let's consider a sentence with three words: "I love movies."
+
+2. **Query, Key, and Value Vectors:**
+   - For each word, we create three vectors: Query (Q), Key (K), and Value (V). These vectors are obtained by multiplying the input embeddings with learned weight matrices $$W_Q$$, $$W_K$$, and $$W_V$$.
+
+   $$
+   Q = XW_Q, \quad K = XW_K, \quad V = XW_V
+   $$
+
+3. **Compatibility Scores:**
+   - The compatibility score between the query vector of a word and the key vectors of all words is calculated using the dot product. This score indicates how much focus the model should place on other words when processing the current word.
+
+   $$
+   \text{score}(Q_i, K_j) = Q_i \cdot K_j
+   $$
+
+4. **Scaled Dot-Product:**
+   - To prevent the dot product from growing too large, we scale it by the square root of the dimension of the key vectors ($$d_k$$).
+
+   $$
+   \text{scaled\_score}(Q_i, K_j) = \frac{Q_i \cdot K_j}{\sqrt{d_k}}
+   $$
+
+5. **Softmax Function:**
+   - The scaled scores are passed through a softmax function to obtain the attention weights. These weights determine the importance of each word in the context of the current word.
+
+   $$
+   \text{attention\_weights}(Q_i, K) = \text{softmax}\left(\frac{Q_i \cdot K}{\sqrt{d_k}}\right)
+   $$
+
+6. **Weighted Sum:**
+   - The final output for each word is obtained by taking the weighted sum of the value vectors, using the attention weights.
+
+   $$
+   \text{output}_i = \sum_j \text{attention\_weights}(Q_i, K_j) \cdot V_j
+   $$
+
+Q: What does multiheaded attention used for in transformer architecture compare to existing self-attention mechanism?
+A: Multi-headed attention is a key component of the Transformer architecture that extends the basic self-attention mechanism to capture different aspects of the input sequence simultaneously. Here are some key benefits of multi-headed attention compared to single-headed self-attention:
+Diverse Focus: Each attention head can focus on different parts of the sentence, capturing various relationships and dependencies. For example, one head might focus on short-term dependencies while another focuses on long-term dependencies.
+Enhanced Representation: By combining the outputs of multiple heads, the model can create a more comprehensive representation of the input sequence.
+Improved Performance: Multi-head attention allows the model to learn more complex patterns and relationships, leading to better performance on tasks like translation, summarization, and question answering.
+Detailed step by step with formulae:
+1. **Multiple Attention Heads:**
+   - Instead of having a single set of Q, K, and V vectors, multi-head attention uses multiple sets (heads). Each head operates independently and focuses on different parts of the sentence.
+
+   $$
+   \text{head}_i = \text{Attention}(QW_Q^i, KW_K^i, VW_V^i)
+   $$
+
+2. **Parallel Processing:**
+   - Each attention head processes the input sequence separately, allowing the model to capture various aspects of the sentence simultaneously.
+
+3. **Concatenation and Linear Transformation:**
+   - The outputs from all attention heads are concatenated and then linearly transformed to produce the final output.
+
+   $$
+   \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{head}_h)W_O
+   $$
