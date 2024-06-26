@@ -8,3 +8,12 @@ git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp && make -j4 && 
 Login to http://127.0.0.1:8080/ and start your conversation with LLM running locally.
 
 ### vLLM
+
+### TGI
+
+### TensorRTLLM
+
+### exllamav2
+
+### Ray on EKS
+
