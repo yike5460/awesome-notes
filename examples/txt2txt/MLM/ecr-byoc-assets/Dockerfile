@@ -3,13 +3,10 @@
 # Refer the official documentation for the base image at https://github.com/aws/deep-learning-containers/blob/master/available_images.md
 FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/djl-inference:0.27.0-deepspeed0.12.6-cu121
 
-# RUN pip install --no-cache-dir boto3
+RUN pip install --no-cache-dir boto3 transformers torch
 
-# Copy model files
-COPY model.py requirements.txt /opt/ml/code/
-
-# Copy custom metric collection script 
-COPY collect_gpu_metrics.py /opt/ml/code/
+# Copy the model pack script
+COPY model_pack.py /opt/ml/code/
 
 # Copy shell script to launch Python metric collection
 COPY start.sh /opt/ml/code/

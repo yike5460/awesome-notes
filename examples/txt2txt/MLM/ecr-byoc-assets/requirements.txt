@@ -2,3 +2,4 @@ tenacity==8.2.3
 transformers>=4.33.1
 accelerate==0.20.3
 transformers_stream_generator
+torch
