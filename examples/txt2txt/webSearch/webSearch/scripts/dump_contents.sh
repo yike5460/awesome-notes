@@ -11,7 +11,8 @@ OUTPUT_FILE="${2:-combined_code_dump.txt}"
 # List of file extensions to include (default to a predefined list if not specified)
 FILE_EXTENSIONS=("${@:3}")
 if [ ${#FILE_EXTENSIONS[@]} -eq 0 ]; then
-    FILE_EXTENSIONS=("py" "js" "html" "css" "java" "cpp" "h" "cs")
+    # FILE_EXTENSIONS=("py" "js" "html" "css" "java" "cpp" "h" "cs")
+    FILE_EXTENSIONS=("py" "js" "java" "cpp" "ts")
 fi
 
 # Empty the output file if it exists
