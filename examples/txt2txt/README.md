@@ -3,3 +3,5 @@
 - Metrics alike logprob
 - Dense/Parse/Multi-vector embeddings
 - Ray on EKS
+- Local life with LLM
+- Gemini 2.0 2M token window
