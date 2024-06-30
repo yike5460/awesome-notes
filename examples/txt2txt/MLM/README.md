@@ -129,6 +129,12 @@ The MLM module will expose a set of RESTful APIs conforming to the OpenAPI speci
 
 ## Model Evaluation
 
-LangSmith evaluators newly feature “self-improvement” whereby human corrections to [LLM-as-a-Judge](https://blog.langchain.dev/aligning-llm-as-a-judge-with-human-preferences/) outputs are stored as few-shot examples, which are then fed back into the prompt in future iterations.
+LangSmith evaluators newly feature “self-improvement” whereby human corrections to [LLM-as-a-Judge](https://blog.langchain.dev/aligning-llm-as-a-judge-with-human-preferences/) outputs are stored as few-shot examples, which are then fed back into the prompt in future iterations. Inspired by the [paper](https://arxiv.org/pdf/2404.12272), it mentioned an EvalGen Interface which designed to assist users in generating evaluation criteria and implementing assertions for evaluating LLM outputs:
+- Provides automated assistance in generating evaluation criteria and implementing assertions.
+- Generates candidate implementations (Python functions, LLM grader prompts) and asks humans to grade a subset of LLM outputs.
+- Uses human feedback to select implementations that align better with user grades.
+
+The sample code for the EvalGen Interface can be refered to /test/Evalgen.py
+
 
 
