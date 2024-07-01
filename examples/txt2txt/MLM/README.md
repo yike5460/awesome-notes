@@ -133,8 +133,36 @@ LangSmith evaluators newly feature “self-improvement” whereby human correcti
 - Provides automated assistance in generating evaluation criteria and implementing assertions.
 - Generates candidate implementations (Python functions, LLM grader prompts) and asks humans to grade a subset of LLM outputs.
 - Uses human feedback to select implementations that align better with user grades.
+The sample code for the EvalGen Interface can be refered to /test/Evalgen.py.
+Either the EvalGen Interface or the LangSmith evaluators are just a few examples of how to evaluate LLM outputs, while the dataset prepared and annotated by human-in-the-loop can be further used to train the reward model for RLHF, e.g. use a BERT classifier to predict the probability distribution accross the positive and negative examples for given prompt completion pairs. For example:
+The original pairwise of prompt-completion pairs are:
+```mermaid
+graph LR
+    A[Prompt] --> B[Completions]
+    B --> |Rank 1| C[A]
+    B --> |Rank 2| D[B]
+    B --> |Rank 3| E[C]
+    C --> F[B]
+    C --> G[C]
+    D --> H[A]
+    D --> I[C]
+    E --> J[A]
+    E --> K[B]
+    F --> L([1,0])
+    G --> M([1,0])
+    H --> N([0,1])
+    I --> O([1,0])
+    J --> P([0,1])
+    K --> Q([0,1])
+```
+And the transformed dataset for training the reward model is shown below:
+| Prompt | Completion y_j (preferred) | Completion y_k (nonpreferred) | Rewards [r_j, r_k] |
+|--------|-----------------------------|-------------------------------|--------------------|
+| **Chris:** Hey Antje, do you like cats? <br> **Antje:** I hate cats. I'm allergic to them. | Chris asks Antje if she likes cats. <br> Antje does not like cats because she is allergic to them. | Chris asks Antje if she likes cats. <br> Antje hates cats. | [1, 0] |
+| **Chris:** Hey Antje, do you like cats? <br> **Antje:** I hate cats. I'm allergic to them. | Chris asks Antje if she likes cats. <br> Antje hates cats. | Antje asks Chris if he likes cats. <br> Chris loves cats because they are fluffy, cute, and cuddly. | [1, 0] |
+| **Chris:** Hey Antje, do you like cats? <br> **Antje:** I hate cats. I'm allergic to them. | Chris asks Antje if she likes cats. <br> Antje does not like cats because she is allergic to them. | Antje asks Chris if he likes cats. <br> Chris loves cats because they are fluffy, cute, and cuddly. | [1, 0] |
 
-The sample code for the EvalGen Interface can be refered to /test/Evalgen.py
+
 
 
 
