@@ -23,20 +23,29 @@ export class MLMStack extends Stack {
 
     // Create SagemMaker image in ECR from local Dockerfile and pass the inference_image_uri to the Lambda function as environment variable to create the SageMaker model
     const ecrRepo = new ecr.Repository(this, 'BYOCImage', {
-      repositoryName: 'ecr-byoc-image',
+      repositoryName: 'byoc-sm-image',
     });
     
-    const dockerImageAsset = new ecr_assets.DockerImageAsset(this, 'BYOCAsset', {
-      directory: 'ecr-byoc-assets',
+    // const dockerImageAsset = new ecr_assets.DockerImageAsset(this, 'BYOCAsset', {
+    //   directory: 'byoc-sm-assets',
+    // });
+
+    // Create VPC for Batch compute environment
+    const connectorVpc = new ec2.Vpc(this, "ConnectorVpc", {
+      ipAddresses: ec2.IpAddresses.cidr("10.100.0.0/16"),
+      maxAzs: 2,
+    });
+ 
+    const connectorSG = new ec2.SecurityGroup(this, "LLM-VPC-SG", {
+      vpc: connectorVpc,
+      description: "LLM Security Group",
     });
 
-    // Find default VPC
-    const connectorVpc = ec2.Vpc.fromLookup(this, 'ConnectorVPC', {
-      isDefault: true,
-    });
-
-    // Find default security group attached to the VPC
-    const securityGroup = ec2.SecurityGroup.fromLookupByName(this, 'DefaultSecurityGroup', 'default', connectorVpc);
+    connectorSG.addIngressRule(
+      connectorSG,
+      ec2.Port.allTraffic(),
+      "allow self traffic",
+    );
 
     // Define batch compute environment with fargate
     const computeEnvironment = new batch.FargateComputeEnvironment(
@@ -48,7 +57,7 @@ export class MLMStack extends Stack {
         vpcSubnets: {
           subnets: connectorVpc.privateSubnets,
         },
-        securityGroups: [securityGroup],
+        securityGroups: [connectorSG],
         maxvCpus: 256,
         spot: false,
       },
@@ -65,6 +74,15 @@ export class MLMStack extends Stack {
       ],
     });
 
+    // Create IAM role for Batch job with full permissions to ECR
+    const batchJobRole = new iam.Role(this, 'BatchJobRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+    });
+
+    batchJobRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryFullAccess')
+    );
+
     // Create Batch Job Definition
     const jobDefinition = new batch.EcsJobDefinition(this, 'ModelPackagingJobDef', {
       container: new batch.EcsFargateContainerDefinition(
@@ -72,13 +90,14 @@ export class MLMStack extends Stack {
         "containerDefn",
         {
           // This container will be first used as batch container to package the model then as SageMaker inference image
-          image: ecs.ContainerImage.fromAsset('./ecr-byoc-assets'),
+          image: ecs.ContainerImage.fromAsset('./batch_job_image'),
           command: ['echo', 'This is a placeholder. Replace with actual model packaging logic.'],
           memory: Size.mebibytes(2048),
           cpu: 1,
           environment: {
             PLACEHOLDER: 'This is a placeholder. Replace with actual environment variables.',
           },
+          jobRole: batchJobRole,
         },
       ),
       jobDefinitionName: 'model-packaging-job-definition',

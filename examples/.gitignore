@@ -11,3 +11,4 @@ sample_models
 *.crt
 *.key
 *.p12
+*.context.json

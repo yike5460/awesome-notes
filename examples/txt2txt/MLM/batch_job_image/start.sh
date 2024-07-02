@@ -1,12 +1,4 @@
 #!/bin/bash
-# Start the package phase, this is inside the batch job container, set the flag to make sure such phase is only run once
-if [ ! -f /opt/ml/code/.packaged ]; then
-    python /opt/ml/code/model_pack.py
-    touch /opt/ml/code/.packaged
-fi
-
-# Wait for the package phase to complete
-wait -n
 
 # Start the model server
 python /opt/ml/code/model.py &

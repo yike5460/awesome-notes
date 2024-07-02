@@ -8,9 +8,12 @@ RUN pip install --no-cache-dir boto3 transformers torch
 # Copy the model pack script
 COPY model_pack.py /opt/ml/code/
 
+# Copy the sm image folder into the container for futher sm model packaging
+COPY sm_image /opt/ml/code/sm_image
+
 # Copy shell script to launch Python metric collection
 COPY start.sh /opt/ml/code/
 RUN chmod +x /opt/ml/code/start.sh
 
 # Set the entrypoint to the shell script
-ENTRYPOINT ["/opt/ml/code/start.sh"]
+ENTRYPOINT ["/opt/ml/code/start_sm.sh"]
