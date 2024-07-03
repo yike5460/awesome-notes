@@ -248,3 +248,13 @@ The self-attention mechanism and MLP layers work together to enable the Transfor
 - The output of the self-attention layer is then passed through the MLP layer, which applies a non-linear transformation to each token independently. This allows the model to further process and refine the representations learned by the self-attention mechanism.
 - The residual connections and layer normalization used in the Transformer architecture facilitate the flow of information and gradients through the network, enabling effective training of deep models. 
 - Multiple Transformer layers are stacked on top of each other, allowing the model to capture hierarchical representations and learn increasingly complex patterns.
+
+Q: Any disadvantage or limitation in MoE model compare to normal LLM?
+A: The Mixture of Experts (MoE) model offers several advantages, such as improved performance on complex tasks and the ability to handle diverse inputs. However, there are also some disadvantages and limitations associated with MoE models compared to traditional Large Language Models (LLMs). Here are some key drawbacks of MoE models:
+- **Complexity and Training Time:** MoE models are more complex than traditional LLMs due to the presence of multiple expert networks and the gating mechanism. Training MoE models can be computationally intensive and time-consuming, requiring significant resources.
+- **Resource Requirements:** MoE models require more memory and computational resources compared to traditional LLMs. The need to store and process multiple expert networks and the gating mechanism can lead to higher resource usage (high VRAM) during training and inference.
+- **Inference Overhead:** During inference, MoE models may require additional computation to select the appropriate expert for a given input. This can result in increased latency and computational overhead compared to LLMs.
+- **Interpretability:** MoE models may be less interpretable compared to traditional LLMs. The interactions between the expert networks and the gating mechanism can make it harder to understand how the model makes predictions and what features contribute to its decisions.
+- **Overfitting:** MoE models can be more prone to overfitting, some experts might be used more frequently than others, leading to imbalanced load and potentially underutilized resources. This can also result in overfitting for frequently used experts and underfitting for less used ones.
+
+

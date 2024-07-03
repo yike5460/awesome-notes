@@ -57,6 +57,7 @@ Model lifecycle management module including instance resource CRUD operations (c
     - Instance status (InService, Updating, Failed, etc.)
     - GPU utilization per instance
     - Number of in-flight inference requests per instance
+- Model version management: Manages the versions of the models deployed to SageMaker endpoints along with their metadata, including training data/code, evaluation metrics/dataset and model artifacts itself.
 - RESTful API Layer: Exposes the functionalities of the above submodules through a set of OpenAPI compliant RESTful APIs. The APIs will be used by client applications and UI for integration.
 
 ### Brief workflow
@@ -115,6 +116,57 @@ sequenceDiagram
 
     Lambda-->>APIGateway: Return API response
     APIGateway-->>Client: Return API response to client
+```
+
+And below are the UML diagrams for model version management in consideration of fine-tuning, evaluation and registry:
+    
+```mermaid
+classDiagram
+    class FoundationModel {
+        version 1
+    }
+    class FineTuningDataAndCode {
+        version 1
+    }
+    class PullFoundationModelMetadata {
+        version 1
+    }
+    class FineTuneAdapterWeights {
+        version 1
+    }
+    class AdaptedModel {
+        version 1
+    }
+    class MergedModelVersion1 {
+        version 1
+    }
+    class EvaluationDataAndCode {
+        version 1
+    }
+    class ModelEvaluation {
+        version 1
+    }
+    class EvaluationDatastore {
+        version 1
+    }
+    class ModelRegistry {
+        metadata for:
+        - Foundation model
+        - Adapted model
+        - Merged model
+    }
+
+    FoundationModel --> PullFoundationModelMetadata : captures
+    FineTuningDataAndCode --> FineTuneAdapterWeights : generates
+    FineTuneAdapterWeights --> AdaptedModel : produces
+    PullFoundationModelMetadata --> MergedModelVersion1 : integrates
+    AdaptedModel --> MergedModelVersion1 : integrates
+    EvaluationDataAndCode --> ModelEvaluation : inputs
+    MergedModelVersion1 --> ModelEvaluation : evaluates
+    ModelEvaluation --> EvaluationDatastore : stores
+    FoundationModel --> ModelRegistry : registers
+    AdaptedModel --> ModelRegistry : registers
+    MergedModelVersion1 --> ModelRegistry : registers 
 ```
 
 The MLM module will expose a set of RESTful APIs conforming to the OpenAPI specification. The OpenAPI specification will define the API paths, methods, request/response schemas, and security requirements. The OpenAPI specification will be used to generate client SDKs and server stubs for easy integration with client applications and UI. Refer to the [OpenAPI Specification](docs/OpenAPI_v1.1.yaml) for the detailed API definitions and Postman compatible [collection](docs/postman_collection_v1.1.json) to import and test the APIs directly.
