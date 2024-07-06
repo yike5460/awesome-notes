@@ -92,6 +92,24 @@ def create_customization_job(job_name, train_data_uri, output_data_uri):
     status = bedrock.get_model_customization_job(jobIdentifier=job_name)["status"]
     print(f"Job status: {status}")
 
+def invoke_customized_model(prompt):
+    # Invoke the customized model
+    body = json.dumps(
+        {
+            "inputText": prompt,
+            "textGenerationConfig":{
+                "maxTokenCount":128,
+                "temperature":0,
+                "topP":1
+            }
+        }
+    )
+    response = bedrock_runtime.invoke_model(
+        modelId = "deployed_model_id",
+        body=body
+    )
+    return response
+
 # Main entry point:
 if __name__ == "__main__":
     # load and transform dataset
