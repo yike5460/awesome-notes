@@ -3,5 +3,8 @@
 - Metrics alike logprob
 - Dense/Parse/Multi-vector embeddings
 - Ray on EKS
-- Local life with LLM
 - Gemini 2.0 2M token window
+- langchain search api
+- paper 2402.00667, existing variant of dpo
+- Speculative Decoding
+- Open Search 稀疏编码, 稀疏图片编码器

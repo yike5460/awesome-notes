@@ -294,3 +294,4 @@ A: In the context of large language model (LLM) inference, the process is typica
 - Importance in LLM Serving
    - **Optimization**: Effective management and optimization of both stages are crucial for improving the overall throughput and latency of LLM serving.
    - **Disaggregation**: Separating these stages into distinct clusters or resource pools, as done in Mooncake, allows for more efficient resource utilization and better handling of diverse workloads.
+

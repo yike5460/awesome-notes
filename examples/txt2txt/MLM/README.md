@@ -19,6 +19,30 @@ Model as a Service (MaaS) is an AI method hosted in the cloud that offers develo
 
 ![MaaS](./img/maas.png)
 
+
+summarize the core function provided by Azure AI studio categorized into classes below: Data management, Model fine-tune, Prompt management, Inference acceleration, Model evaluation, Tracing and debugging, API/SDK support, Other
+
+# Markteting Analyze
+Overall, we obseve that most of the MaaS providers are focusing on the following aspects beside the managed foundation model:
+- Data management, including data pre-processing (ETL), labeling and augmentation, data compression for network transmission, etc.
+- Prompt management: including built-in prompt templates for different tasks, few shot management, etc.
+- Model fine-tune, including post-training optimization, sft/sft-lora, rlhf, incremental traing, etc.
+- Inference acceleration, including hardware acceleration (e.g. custom chip, heterogeneous gpu for decoupled prefill & decode), software optimization (flashAttension, quantization, cache etc.) without aware of the underlying infrastructure
+- Model evaluation, including model comparison, auto/mannual evaluation, etc.
+- Data privacy, including multi-tenancy, model encription, sandbox isolation, etc.
+- Tracing and debugging, full path observability from data pre-processing, intention detection, knowledge retrieval to llm output with metrics including extracted knowledge metadata, identified intention, tools used, llm inference latency and token output, etc.
+- API/SDK support, including RESTful API, multi-language SDK, etc.
+
+Some of the MaaS providers been observed are:
+- Azure: Azure AI Studio
+- 阿里云: Dash Scope
+- 腾讯云
+- 百度千帆: Model Builder
+- 字节跳动: 火山方舟
+- 商汤: SensorCore
+- 第四范式: Model Hub 
+- 智谱AI
+
 # System Overview
 * Model Lifecycle Management, CRUD operation on model, dataset and associate infrastructure (SageMaker Endpoint)
 * Model Efficiency, accelerate inference with hardware (customized chip) and software (optimized operator, LMI, model quantization, hosted fine tuning etc.)
