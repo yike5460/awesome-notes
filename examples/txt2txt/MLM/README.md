@@ -23,13 +23,13 @@ Model as a Service (MaaS) is an AI method hosted in the cloud that offers develo
 summarize the core function provided by Azure AI studio categorized into classes below: Data management, Model fine-tune, Prompt management, Inference acceleration, Model evaluation, Tracing and debugging, API/SDK support, Other
 
 # Markteting Analyze
-Overall, we obseve that most of the MaaS providers are focusing on the following aspects beside the managed foundation model:
+Overall, we observe that most of the MaaS providers are focusing on the following aspects beside the managed foundation model:
 - Data management, including data pre-processing (ETL), labeling and augmentation, data compression for network transmission, etc.
 - Prompt management: including built-in prompt templates for different tasks, few shot management, etc.
-- Model fine-tune, including post-training optimization, sft/sft-lora, rlhf, incremental traing, etc.
+- Model fine-tune, including post-training optimization, SFT/SFT-LORA, RLHF, incremental training, etc.
 - Inference acceleration, including hardware acceleration (e.g. custom chip, heterogeneous gpu for decoupled prefill & decode), software optimization (flashAttension, quantization, cache etc.) without aware of the underlying infrastructure
-- Model evaluation, including model comparison, auto/mannual evaluation, etc.
-- Data privacy, including multi-tenancy, model encription, sandbox isolation, etc.
+- Model evaluation, including model comparison, auto/manual evaluation, etc.
+- Data privacy, including multi-tenancy, model encryption, sandbox isolation, etc.
 - Tracing and debugging, full path observability from data pre-processing, intention detection, knowledge retrieval to llm output with metrics including extracted knowledge metadata, identified intention, tools used, llm inference latency and token output, etc.
 - API/SDK support, including RESTful API, multi-language SDK, etc.
 
@@ -48,8 +48,7 @@ Some of the MaaS providers been observed are:
 * Model Efficiency, accelerate inference with hardware (customized chip) and software (optimized operator, LMI, model quantization, hosted fine tuning etc.)
     * do we know top 3 techniques are used in consideration for its maturity, performance and eco-system?
     * can we implement the top 3 techniques prototype and commercialization with automation, low code etc.
-
-
+* Intention Management, allow user to inject their application specific prompt template along with tools involved to customize the  intention detection, besides the built-in prompt templates and tools
 * Model Evaluation, explainable AI with objective metric and evaluation method (e.g. RAGAS) 
 * Tracing, debugging and visualization of the stats from PE, embedding, retrieval
 * Filter & particularize content restrictions using AWS Guardrails 
@@ -199,7 +198,38 @@ The MLM module will expose a set of RESTful APIs conforming to the OpenAPI speci
 
 ### acceleration with software
 
-* LMI with SageMaker
+#### LMI with SageMaker
+LMI DLCs offer a low-code interface that simplifies using state-of-the-art inference optimization techniques and hardware. LMI privide features some of the core features:
+- Tensor Parallelism: Distributes the computational workload across multiple processing units, significantly speeding up model training and inference times.
+- Efficient Attention: Optimizes attention mechanisms in models to enhance performance and reduce computational overhead.
+- Batching: Aggregates multiple inference requests into a single batch to improve throughput and efficiency.
+- Quantization: Reduces the precision of model weights and activations, leading to faster computation and reduced memory usage without significantly impacting accuracy.
+- Memory Management: Efficiently allocates and manages memory resources to optimize performance and minimize bottlenecks.
+
+Backend selection:
+```mermaid
+flowchart TD
+    Start["Start"] --> HardwareSupport{"HardwareSupport"} & WorkloadSupport{"WorkloadSupport"}
+    HardwareSupport -- Inf2 --> NeuronX["NeuronX SageMaker container"]
+    HardwareSupport -- GPU --> ModelSelection{"Model Selection"}
+    ModelSelection --> FalconLlama["Falcon, Llama2, Code Llama"] & T5Models["T5, MPT, GPT-NeoX, StarCoder"] & BaichuanMistral["Baichuan, Mistral"]
+    WorkloadSupport -- Open-ended generation --> GenAITask["GenAITask"]
+    GenAITask -- e.g. chatbots, code gen --> vLLM["vLLM DeepSpeed container"]
+    WorkloadSupport -- Predictable input/output length --> PredictableIO["PredictableIO"]
+    PredictableIO -- e.g. summarization --> TensorRT-LLM["TensorRT-LLM TRT-LLM container"]
+    FalconLlama --> TokenLength{"Output Token length > 1024?"}
+    TokenLength -- Yes --> LMI-Dist["LMI-Dist"]
+    TokenLength -- No --> TensorRT-LLM
+    T5Models --> LMI-Dist
+    BaichuanMistral --> vLLM
+    LMI-Dist -- Serving properties --> LMI-DistProps["engine=MPI, option.tensor_parallel_degree=max, option.model_id=, option.rolling_batch=lmi-dist"]
+    TensorRT-LLM -- Serving properties --> TRT-LLMProps["engine=MPI, option.model_id="]
+    vLLM -- Serving properties --> vLLMProps["engine=Python, option.tensor_parallel_degree=max, option.model_id=, option.rolling_batch=vllm"]
+    style NeuronX fill:#FF6D00
+    style vLLM fill:#FF6D00
+    style TensorRT-LLM fill:#FF6D00
+    style LMI-Dist fill:#FF6D00
+```
 
 * other accelerate framework
 
