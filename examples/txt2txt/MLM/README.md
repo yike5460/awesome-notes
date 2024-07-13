@@ -51,7 +51,7 @@ Some of the MaaS providers been observed are:
 * Intention Management, allow user to inject their application specific prompt template along with tools involved to customize the  intention detection, besides the built-in prompt templates and tools
 * Model Evaluation, explainable AI with objective metric and evaluation method (e.g. RAGAS) 
 * Tracing, debugging and visualization of the stats from PE, embedding, retrieval
-* Filter & particularize content restrictions using AWS Guardrails 
+* Filter & particularize content restrictions using AWS Guardrails
 * Full fledge RESTful API and multi-language SDK
 * Data Privacy, multi-tenancy with least privilege 
 
@@ -232,6 +232,54 @@ flowchart TD
 ```
 
 * other accelerate framework
+
+#### Multi-tier cache in web & backend
+Using multi-tier cache to reduce the load on the backend and improve the response time of the system. The multi-tier cache can be implemented in web using local storage, browser cache, and CDN, and in backend using Redis, Memcached, and database cache.
+
+web cache implementation sample using js:
+```javascript
+// Check if the data is present in the local storage
+if (localStorage.getItem('data')) {
+    // Use the data from the local storage
+    const data = JSON.parse(localStorage.getItem('data'));
+    console.log('Data from local storage:', data);
+} else {
+    // Fetch the data from the server
+    fetch('https://api.example.com/data')
+        .then(response => response.json())
+        .then(data => {
+            // Store the data in the local storage
+            localStorage.setItem('data', JSON.stringify(data));
+            console.log('Data from server:', data);
+        });
+}
+```
+
+backend cache implementation sample using Redis, e.g. managed by AWS Elasticache, implemented by AWS CDK:
+```typescript
+import * as elasticache from '@aws-cdk/aws-elasticache';
+
+// Create a Redis cluster
+const redisCluster = new elasticache.CfnCacheCluster(this, 'RedisCluster', {
+    cacheNodeType: 'cache.t3.micro',
+    engine: 'redis',
+    numCacheNodes: 1,
+    cacheSubnetGroupName: 'my-cache-subnet-group',
+    vpcSecurityGroupIds: ['sg-12345678'],
+});
+
+// Create a cache policy
+const cachePolicy = new elasticache.CfnParameterGroup(this, 'CachePolicy', {
+    cacheParameterGroupFamily: 'redis6.x',
+    description: 'Cache policy for Redis cluster',
+    parameters: {
+        'maxmemory-policy': 'allkeys-lru',
+    },
+});
+
+// Associate the cache policy with the Redis cluster
+redisCluster.addDependsOn(cachePolicy);
+```
 
 ## Model Evaluation
 
