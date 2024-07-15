@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 from transformers import DistilBertTokenizer, DistilBertForMaskedLM
 import torch
 import hashlib
+from collections import OrderedDict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,24 +26,51 @@ def timing_decorator(func):
     return wrapper
 
 class KVCache:
-    def __init__(self):
-        self.data = {}
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
 
     def _hash_key(self, key):
         return hashlib.sha256(key.encode()).hexdigest()
 
-    async def load_blocks(self, block_ids):
-        return {self._hash_key(block_id): self.data.get(self._hash_key(block_id), {}) for block_id in block_ids}
-
-    async def store_blocks(self, block_ids, data):
-        for block_id in block_ids:
-            self.data[self._hash_key(block_id)] = data
-
-    async def update(self, key, value):
-        self.data[self._hash_key(key)] = value
-
     async def get(self, key):
-        return self.data.get(self._hash_key(key))
+        hashed_key = self._hash_key(key)
+        if hashed_key not in self.cache:
+            return None
+        value = self.cache.pop(hashed_key)
+        self.cache[hashed_key] = value
+        return value
+
+    async def put(self, key, value):
+        hashed_key = self._hash_key(key)
+        if hashed_key in self.cache:
+            self.cache.pop(hashed_key)
+        elif len(self.cache) >= self.capacity:
+            self.cache.popitem(last=False)
+        self.cache[hashed_key] = value
+
+class Messenger:
+    async def transfer_kv_cache(self, source, destination, kv_data):
+        for key, value in kv_data.items():
+            await destination.put(key, value)
+
+    async def transfer_kv_cache_rdma(self, source, destination, kv_data):
+        # Simulate RDMA transfer
+        for key, value in kv_data.items():
+            await destination.put(key, value)
+            # In actual implementation, use RDMA APIs like `nvidia_p2p_get_pages` and `nvidia_p2p_put_pages`
+            # Example:
+            # nvidia_p2p_get_pages(...)
+            # Perform RDMA transfer
+            # nvidia_p2p_put_pages(...)
+    # async def transfer_kv_cache_rdma(self, source, destination, kv_data):
+    #     # Simulate RDMA transfer using asyncio streams
+    #     reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+    #     for key, value in kv_data.items():
+    #         writer.write(f"{key}:{value}\n".encode())
+    #         await writer.drain()
+    #     writer.write_eof()
+    #     await writer.wait_closed()            
 
 class PrefillNode:
     def __init__(self, gpu_memory, cpu_memory, window_size=3):
@@ -50,6 +78,7 @@ class PrefillNode:
         self.cpu_memory = cpu_memory
         self.window_size = window_size
 
+    @timing_decorator
     async def prefill(self, input_tokens, reusable_block_ids):
         new_kv_data = {}
         uncached_windows = []
@@ -70,8 +99,10 @@ class PrefillNode:
             """
             Sample uncached_windows:
             uncached_windows = [['apple', 'banana', 'cherry'], ['banana', 'cherry', 'date'], ['cherry', 'date', 'apple']]
+
             Sample uncached_tokens:
             uncached_tokens = ['apple', 'banana', 'cherry', 'date']
+
             Sample mapping:
             token_to_hidden_state =
             {
@@ -92,7 +123,7 @@ class PrefillNode:
 
             hidden_states = outputs.hidden_states[-1]
             num_tokens = hidden_states.size(1)
-            # Store the hidden states for the entire window, not just individual tokens since number of auto-regressive hidden states that may not directly correspond to input tokens, which means the prefill might return fewer hidden states than the number of input tokens due to padding, truncation, or other preprocessing steps.            
+            # Store the hidden states for the entire window, not just individual tokens since number of auto-regressive hidden states that may not directly correspond to input tokens, which means the prefill might return fewer hidden states than the number of input   tokens due to padding, truncation, or other preprocessing steps.
             token_to_hidden_state = {token: hidden_states[0, i].tolist() for i, token in enumerate(uncached_tokens) if i < num_tokens}
 
             # Process and cache new results for each window
@@ -100,7 +131,7 @@ class PrefillNode:
                 window_hidden_states = [token_to_hidden_state.get(token, []) for token in window]
                 window_hash = self.cpu_memory._hash_key(str(window))
                 new_kv_data[window_hash] = window_hidden_states
-                await self.cpu_memory.update(window_hash, window_hidden_states)
+                await self.cpu_memory.put(window_hash, window_hidden_states)
 
         logger.info(f"Processed {len(uncached_windows)} uncached windows")
         return new_kv_data
@@ -112,7 +143,7 @@ class DecodingNode:
 
     async def receive_kv_cache(self, kv_data):
         for key, value in kv_data.items():
-            await self.cpu_memory.update(key, value)
+            await self.cpu_memory.put(key, value)
 
     @timing_decorator
     async def decode(self, tokens: List[str]) -> List[str]:
@@ -135,16 +166,18 @@ class DecodingNode:
         return decoded_tokens
 
 class Conductor:
-    def __init__(self, prefill_nodes: List[PrefillNode], decoding_nodes: List[DecodingNode]):
+    def __init__(self, prefill_nodes: List[PrefillNode], decoding_nodes: List[DecodingNode], messenger: Messenger):
         self.prefill_nodes = prefill_nodes
         self.decoding_nodes = decoding_nodes
+        self.messenger = messenger
 
     async def handle_request(self, input_tokens: List[str], reusable_block_ids: List[int]) -> List[str]:
         try:
             selected_prefill_node = self.select_prefill_node()
             new_kv_data = await selected_prefill_node.prefill(input_tokens, reusable_block_ids)
             selected_decoding_node = self.select_decoding_node()
-            await selected_decoding_node.receive_kv_cache(new_kv_data)
+            await self.messenger.transfer_kv_cache(selected_prefill_node.cpu_memory, selected_decoding_node.cpu_memory, new_kv_data)
+            # await self.messenger.transfer_kv_cache_rdma(selected_prefill_node.cpu_memory, selected_decoding_node.cpu_memory, new_kv_data)
             decoded_tokens = await selected_decoding_node.decode(input_tokens)
             logger.info(f"Decoded tokens: {decoded_tokens}")
             return decoded_tokens
@@ -159,11 +192,12 @@ class Conductor:
         return min(self.decoding_nodes, key=lambda node: node.current_load)
 
 async def main():
-    cpu_memory = KVCache()
-    gpu_memory = KVCache()
+    cpu_memory = KVCache(capacity=1000)
+    gpu_memory = KVCache(capacity=1000)
+    messenger = Messenger()
     prefill_node = PrefillNode(gpu_memory, cpu_memory, window_size=3)
     decoding_node = DecodingNode(cpu_memory)
-    conductor = Conductor([prefill_node], [decoding_node])
+    conductor = Conductor([prefill_node], [decoding_node], messenger)
 
     input_tokens = ["Hello", "world", "how", "are", "you"]
     reusable_block_ids = [1, 2, 3]
