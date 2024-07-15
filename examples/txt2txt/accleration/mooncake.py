@@ -5,6 +5,7 @@ from functools import wraps
 from typing import List, Dict, Any
 from transformers import DistilBertTokenizer, DistilBertForMaskedLM
 import torch
+import hashlib
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,18 +28,21 @@ class KVCache:
     def __init__(self):
         self.data = {}
 
+    def _hash_key(self, key):
+        return hashlib.sha256(key.encode()).hexdigest()
+
     async def load_blocks(self, block_ids):
-        return {block_id: self.data.get(block_id, {}) for block_id in block_ids}
+        return {self._hash_key(block_id): self.data.get(self._hash_key(block_id), {}) for block_id in block_ids}
 
     async def store_blocks(self, block_ids, data):
         for block_id in block_ids:
-            self.data[block_id] = data
+            self.data[self._hash_key(block_id)] = data
 
     async def update(self, key, value):
-        self.data[key] = value
+        self.data[self._hash_key(key)] = value
 
     async def get(self, key):
-        return self.data.get(key)
+        return self.data.get(self._hash_key(key))
 
 class PrefillNode:
     def __init__(self, gpu_memory, cpu_memory, window_size=3):
@@ -53,9 +57,10 @@ class PrefillNode:
         # Check for cached results using sliding window
         for i in range(len(input_tokens) - self.window_size + 1):
             window = tuple(input_tokens[i:i+self.window_size])
-            cached_result = await self.cpu_memory.get(window)
+            window_hash = self.cpu_memory._hash_key(str(window))
+            cached_result = await self.cpu_memory.get(window_hash)
             if cached_result is not None:
-                new_kv_data[window] = cached_result
+                new_kv_data[window_hash] = cached_result
             else:
                 uncached_windows.append(window)
 
@@ -87,14 +92,15 @@ class PrefillNode:
 
             hidden_states = outputs.hidden_states[-1]
             num_tokens = hidden_states.size(1)
-            # Store the hidden states for the entire window, not just individual tokens since number of auto-regressive hidden states that may not directly correspond to input tokens, which means the prefill might return fewer hidden states than the number of input tokens due to padding, truncation, or other preprocessing steps.
+            # Store the hidden states for the entire window, not just individual tokens since number of auto-regressive hidden states that may not directly correspond to input tokens, which means the prefill might return fewer hidden states than the number of input tokens due to padding, truncation, or other preprocessing steps.            
             token_to_hidden_state = {token: hidden_states[0, i].tolist() for i, token in enumerate(uncached_tokens) if i < num_tokens}
 
             # Process and cache new results for each window
             for window in uncached_windows:
                 window_hidden_states = [token_to_hidden_state.get(token, []) for token in window]
-                new_kv_data[window] = window_hidden_states
-                await self.cpu_memory.update(window, window_hidden_states)
+                window_hash = self.cpu_memory._hash_key(str(window))
+                new_kv_data[window_hash] = window_hidden_states
+                await self.cpu_memory.update(window_hash, window_hidden_states)
 
         logger.info(f"Processed {len(uncached_windows)} uncached windows")
         return new_kv_data
@@ -112,13 +118,11 @@ class DecodingNode:
     async def decode(self, tokens: List[str]) -> List[str]:
         decoded_tokens = []
         for token in tokens:
-            # Use prefilled results from KV cache
-            cached_vector = await self.cpu_memory.get(token)
+            token_hash = self.cpu_memory._hash_key(token)
+            cached_vector = await self.cpu_memory.get(token_hash)
             if cached_vector is not None:
-                # Use the cached vector for decoding
                 logits = torch.tensor(cached_vector).unsqueeze(0)
             else:
-                # Fallback to model if not in cache
                 inputs = tokenizer(token, return_tensors="pt")
                 with torch.no_grad():
                     outputs = model(**inputs)
