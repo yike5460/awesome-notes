@@ -295,3 +295,15 @@ A: In the context of large language model (LLM) inference, the process is typica
    - **Optimization**: Effective management and optimization of both stages are crucial for improving the overall throughput and latency of LLM serving.
    - **Disaggregation**: Separating these stages into distinct clusters or resource pools, as done in Mooncake, allows for more efficient resource utilization and better handling of diverse workloads.
 
+Q: What are the usage of Auxiliary Loss in MoE?
+A: In Mixture of Experts (MoE) models, auxiliary loss functions are crucial for addressing the load balancing problem. The load balancing issue arises because the gating mechanism in Sparse MoE might route most of the inputs to a few experts, leaving others underutilized. This imbalance can degrade the model's performance and hinder the specialization of experts.
+
+Key Points:
+- Load Balancing: Ensures that all experts are utilized evenly, preventing some from being overloaded while others are idle.
+- Training Stability: Helps stabilize the training process by encouraging a more uniform distribution of inputs across all experts.
+- Auxiliary Loss Functions: These are additional loss terms added to the main loss function to penalize imbalances in expert usage.
+
+Common Auxiliary Loss Functions:
+- Importance Loss: Encourages each expert to have equal importance by minimizing the variance in the gating probabilities.
+- Load Loss: Ensures that the number of tokens assigned to each expert is balanced.
+

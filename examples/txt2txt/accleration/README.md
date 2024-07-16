@@ -1,6 +1,6 @@
-## Quick Start
 
-### LLAMA.CPP
+# Acceleration Frameworks
+## LLAMA.CPP
 ```
 git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp && make -j4 && cd models/ && wget https://huggingface.co/TheBloke/vicuna-7B-v1.5-GGUF/resolve/main/vicuna-7b-v1.5.Q5_0.gguf && cd .. && ./main -m models/vicuna-7b-v1.5.Q5_0.gguf && ./server -m models/vicuna-7b-v1.5.Q5_0.gguf
 ```
@@ -15,8 +15,7 @@ Login to http://127.0.0.1:8080/ and start your conversation with LLM running loc
 
 ### exllamav2
 
-### Ray on EKS
-
+# Acceleration Techniques
 ## Prefill and Decoding Process
 ### Prefill Process
 1. Input Token Processing:
@@ -115,3 +114,62 @@ sequenceDiagram
 
     DecodingNode->>Client: Send final output
 ```
+
+## LLM Quantanization
+### Usage of Skip RmsNorm A & Quantize
+
+The "Skip RmsNorm A & Quantize" block in the workflow serves two primary purposes: normalization and quantization. Here's a detailed explanation of each component:
+
+#### 1. **RMS Normalization (RmsNorm)**
+RMSNorm (Root Mean Square Layer Normalization) is a normalization technique used to stabilize and improve the training of neural networks, particularly transformers. It normalizes the input data by dividing it by its root mean square (RMS) value. This process helps in maintaining the scale of the activations, which can lead to faster convergence and better performance.
+
+**Advantages of RMSNorm over LayerNorm:**
+- **Efficiency**: RMSNorm is computationally more efficient than LayerNorm because it does not require mean centering, which reduces the computational overhead.
+- **Memory Bandwidth**: It saves memory bandwidth, which can be crucial for large models and resource-constrained environments.
+
+#### 2. **Quantization**
+Quantization is the process of converting the floating-point representations of weights and activations into lower precision formats, such as 8-bit integers (INT8). This process significantly reduces the model size and computational requirements, making it more efficient in terms of memory and speed.
+
+**Benefits of Quantization:**
+- **Reduced Memory Usage**: By converting FP16 or FP32 values to INT8, the memory footprint of the model is reduced, which is beneficial for deploying models on devices with limited memory.
+- **Increased Speed**: Integer operations are generally faster than floating-point operations, leading to reduced inference time.
+- **Power Efficiency**: Lower precision computations consume less power, which is advantageous for edge devices and mobile applications.
+
+### Integration in the Workflow
+In the provided workflow, the "Skip RmsNorm A & Quantize" block is applied to the input data in FP16 format. This block performs the following operations:
+1. **Skip Connection**: It creates a skip connection that bypasses the normalization and quantization steps, preserving the original input data.
+2. **RMS Normalization**: The input data is normalized using RMSNorm.
+3. **Quantization**: The normalized data is quantized to INT8 format.
+
+### Sample Code Implementation
+
+Below is a sample code snippet that demonstrates the implementation of the "Skip RmsNorm A & Quantize" block:
+
+```python
+import torch
+import torch.nn as nn
+import torch.quantization
+
+class SkipRmsNormQuantize(nn.Module):
+    def __init__(self, hidden_dim):
+        super(SkipRmsNormQuantize, self).__init__()
+        self.norm = nn.LayerNorm(hidden_dim)
+        self.quant = torch.quantization.QuantStub()
+
+    def forward(self, x):
+        x_skip = x  # Skip connection
+        x = self.norm(x)  # RMS Normalization
+        x = self.quant(x)  # Quantization to INT8
+        return x + x_skip  # Adding skip connection
+
+# Example usage
+input_data = torch.randn(1, 1024, dtype=torch.float16)
+model = SkipRmsNormQuantize(hidden_dim=1024)
+model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
+torch.quantization.prepare(model, inplace=True)
+output = model(input_data)
+torch.quantization.convert(model, inplace=True)
+```
+
+### Conclusion
+The "Skip RmsNorm A & Quantize" block in the transformer workflow is crucial for enhancing the model's efficiency by normalizing the input data and reducing its precision. This combination helps in achieving faster computations, reduced memory usage, and better power efficiency, making it suitable for deployment in resource-constrained environments.
