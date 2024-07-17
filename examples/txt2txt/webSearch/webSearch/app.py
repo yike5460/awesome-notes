@@ -25,6 +25,7 @@ load_dotenv()
 
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 GeminiModel = genai.GenerativeModel('gemini-1.5-pro-latest')
+GenerationConfig = genai.GenerationConfig
 
 # Read from local env file
 # API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -153,25 +154,33 @@ def process_repo():
 
     return jsonify({'response': str(to_markdown(response.text))})
 
-@app.route('/chat_repo', methods=['POST'])
+@app.route('/chat_repo', methods=['POST', 'GET'])
 def chat_repo():
-    data = request.get_json()
-    repo_url = data.get('repo_url')
-    repo_query = data.get('repo_query')
 
-    if not repo_url or not repo_query:
-        return jsonify({'error': 'Repository URL and query are required'}), 400
+    repo_query = request.form["query"]
+    # repo_url = request.form["repo_url"]
+
+    # data = request.get_json()
+    # repo_url = data.get('repo_url')
+    # repo_query = data.get('repo_query')
+
+    # if not repo_url or not repo_query:
+    #     return jsonify({'error': 'Repository URL and query are required'}), 400
 
     # Read the dumped contents
-    with open('repository_contents.txt', 'r') as file:
+    with open('combined_code_dump.txt', 'r') as file:
         repo_contents = file.read()
 
     # Use GPT or Gemini to answer the query based on the repository contents
     # TODO: truncate the repo_contents to 1024*10 tokens to avoid the error: google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota).
     prompt = f"Based on the following repository contents, {repo_contents[:1024*10]}, answer the query: {repo_query}"
+    # Generation Config
+    config = GenerationConfig(
+        max_output_tokens=2048, temperature=0.4, top_p=1, top_k=32
+    )
     response = GeminiModel.generate_content(prompt)
 
-    return jsonify({'response': response.choices[0].text})
+    return jsonify({'response': response.text})
 
 # User Interface Route
 @app.route("/search", methods=["POST"])
@@ -468,4 +477,8 @@ if __name__ == "__main__":
     curl -X POST http://localhost:5000/search \
     -F 'query=How to start with Flask?' \
     -F 'options=all'
+
+    curl -X GET http://localhost:5000/chat_repo \
+    -F 'query=What are the core components involved?' \
+    -F 'repo_url=example.com'
     """

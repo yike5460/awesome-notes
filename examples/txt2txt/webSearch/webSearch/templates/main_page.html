@@ -171,7 +171,7 @@
             </form>
 
             <h2>Chat with Repository</h2>
-            <form id="chat-repo-form" action="/chat_repo" method="post">
+            <form id="chat-repo-form" action="/chat_repo" method="post" enctype="multipart/form-data">
                 <label for="repo-query">Query:</label>
                 <input type="text" id="repo-query" name="repo_query" required><br><br>
                 <input type="submit" value="Ask">
