@@ -1,4 +1,4 @@
-# Notes not yet organized
+# Background
 
 ## Table of Contents
 - [Introduction](#introduction)
