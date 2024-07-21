@@ -1,5 +1,5 @@
 {
-  "name": "intelli-agent",
+  "name": "@yike5460/intelli-agent",
   "repository": {
     "type": "git",
     "url": "https://github.com/yike5460/justNotes.git"
@@ -75,7 +75,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.0.0",
+  "version": "0.0.1",
   "jest": {
     "coverageProvider": "v8",
     "testMatch": [

@@ -8,7 +8,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
   defaultReleaseBranch: 'main',
   // deps: ['[aws-cdk-lib,constructs]'],
   jsiiVersion: '~5.4.0',
-  name: 'intelli-agent',
+  name: '@yike5460/intelli-agent',
+  packageName: '@yike5460/intelli-agent',
   projenrcTs: true,
   repositoryUrl: 'https://github.com/yike5460/justNotes.git',
 
@@ -36,5 +37,5 @@ const project = new awscdk.AwsCdkConstructLibrary({
 });
 
 // Include Lambda asset in the package
-// project.addPackageIgnore('!/lambda');
+project.addPackageIgnore('!/lambda');
 project.synth();

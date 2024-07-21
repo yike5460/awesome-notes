@@ -1,4 +1,5 @@
 // import * as cdk from 'aws-cdk-lib';
+import * as path from 'path';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -12,7 +13,7 @@ export interface AIAgentProps {
 
   /**
    * The runtime for the Lambda function
-   * @default lambda.Runtime.NODEJS_14_X
+   * @default lambda.Runtime.NODEJS_18_X
    */
   readonly runtime?: lambda.Runtime;
 
@@ -39,9 +40,10 @@ export class AIAgent extends Construct {
 
     // Create the Lambda function
     this.lambdaFunction = new lambda.Function(this, 'AIAgentFunction', {
-      runtime: props.runtime || lambda.Runtime.NODEJS_14_X,
+      runtime: props.runtime || lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda'),
+      //   code: lambda.Code.fromAsset('lambda'),
+      code: lambda.Code.fromAsset(path.join(__dirname, '..', 'lambda')),
       memorySize: props.memorySize || 128,
       environment: {
         AGENT_NAME: props.agentName,

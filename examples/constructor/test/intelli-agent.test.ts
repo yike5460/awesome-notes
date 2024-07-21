@@ -20,7 +20,7 @@ test('Intelli Agent Construct', () => {
 
   template.hasResourceProperties('AWS::Lambda::Function', {
     Handler: 'index.handler',
-    Runtime: 'nodejs14.x',
+    Runtime: 'nodejs18.x',
   });
 
   template.hasResourceProperties('AWS::ApiGateway::RestApi', {

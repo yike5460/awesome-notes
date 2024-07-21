@@ -38,7 +38,7 @@ npx projen
 
 6. Build your project
 ```bash
-npx projen build
+npx projen build && npm version patch
 ```
 
 7. Publish your project to npm, we don't use "npx progen release" for simplicity in skip some processes e.g. unused git diff and customized npm authentication
@@ -57,19 +57,28 @@ npx projen new awscdk-app-ts
 
 2. Add the new construct to your project
 ```bash
-npm install intelli-agent
+npm install @yike5460/intelli-agent
 ```
 
 3. Import the construct in your stack
 ```typescript
-import { IntelliAgentConstruct } from 'intelli-agent';
+import { AIAgent } from '@yike5460/intelli-agent';
 ```
 
 4. Use the construct in your stack
 ```typescript
-new IntelliAgentConstruct(this, 'IntelliAgentConstruct', {
-  // properties here
-});
+export class MyStack extends Stack {
+  constructor(scope: Construct, id: string, props: StackProps = {}) {
+    super(scope, id, props);
+
+    // define resources here...
+    new AIAgent(this, 'IntelliAgentConstruct', {
+      agentName: 'my-intelli-agent',
+      runtime: lambda.Runtime.NODEJS_LATEST,
+      memorySize: 256,
+    });
+  }
+}
 ```
 
 5. Build and deploy your project
