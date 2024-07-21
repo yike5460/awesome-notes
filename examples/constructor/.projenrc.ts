@@ -25,11 +25,14 @@ const project = new awscdk.AwsCdkConstructLibrary({
     module: 'intelli_agent',
   },
 
+  versionrcOptions: {
+    defaultVersion: '0.1.0',
+  },
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */
 });
 
 // Include Lambda asset in the package
-project.addPackageIgnore('!/lambda');
+// project.addPackageIgnore('!/lambda');
 project.synth();
