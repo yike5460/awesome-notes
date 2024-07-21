@@ -32,7 +32,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "VERSIONRCOPTIONS": "{\"versioningStrategy\":\"bump\"}"
       },
       "steps": [
         {
@@ -259,7 +260,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "VERSIONRCOPTIONS": "{\"versioningStrategy\":\"bump\"}"
       },
       "steps": [
         {

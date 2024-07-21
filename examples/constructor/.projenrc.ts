@@ -25,9 +25,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
     module: 'intelli_agent',
   },
 
+  // Choose a versioning strategy
   versionrcOptions: {
-    defaultVersion: '0.1.0',
+    versioningStrategy: 'bump',
   },
+
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */
