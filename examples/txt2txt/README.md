@@ -1,8 +1,9 @@
 - Using [awscurl](https://github.com/okigan/awscurl) to make a request to the LMI [Large Model Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference-container-docs.html) API
 - Exploration TGI, TensorRTLLM and VLLM
 - Ray on EKS
-- langchain search api
+- langchain search api/langchain studio
 - paper 2402.00667, existing variant of dpo
 - Speculative Decoding
 - Open Search 稀疏编码, 稀疏图片编码器
 - AudioLM，Diffusion，Any2Any
+- typescripy file package with relative path folder
