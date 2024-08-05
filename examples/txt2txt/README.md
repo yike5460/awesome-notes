@@ -3,6 +3,6 @@
 - Ray on EKS
 - langchain search api
 - paper 2402.00667, existing variant of dpo
-- Speculative Decoding
 - Open Search 稀疏编码, 稀疏图片编码器
 - AudioLM，Diffusion，Any2Any
+- customize GitHub workflow (Claude3) & runner (EC2/ECS)
