@@ -9,7 +9,7 @@ This tutorial covers all core features of Rust, following the official Rust Deve
 
 Typical usage: Systems programming, web assembly, command-line tools, and more.
 
-[See introduction.rs for a "Hello, World!" example](introduction.rs)
+[See introduction.rs for a "Hello, World!" example](rust_tutorial/introduction.rs)
 
 ## 2. Basic Syntax and Concepts
 - Variables and mutability: Understanding let, mut, and constants.
@@ -20,7 +20,7 @@ Typical usage: Systems programming, web assembly, command-line tools, and more.
 
 Typical usage: These concepts form the foundation of any Rust program.
 
-[Explore basic syntax in basics.rs](basics.rs)
+[Explore basic syntax in basics.rs](rust_tutorial/basics.rs)
 
 ## 3. Ownership and Borrowing
 - Ownership rules: Each value has an owner, only one owner at a time, owner goes out of scope, value is dropped.
@@ -29,7 +29,7 @@ Typical usage: These concepts form the foundation of any Rust program.
 
 Typical usage: Managing memory safely without a garbage collector, preventing data races at compile time.
 
-[Practice ownership concepts in ownership.rs](ownership.rs)
+[Practice ownership concepts in ownership.rs](rust_tutorial/ownership.rs)
 
 ## 4. Structs and Enums
 - Defining and instantiating structs: Custom data types to group related data.
@@ -38,7 +38,7 @@ Typical usage: Managing memory safely without a garbage collector, preventing da
 
 Typical usage: Creating custom types to model domain-specific data and behavior.
 
-[See structs_enums.rs for examples](structs_enums.rs)
+[See structs_enums.rs for examples](rust_tutorial/structs_enums.rs)
 
 ## 5. Modules and Packages
 - Organizing code with modules: Controlling scope and privacy.
@@ -46,7 +46,7 @@ Typical usage: Creating custom types to model domain-specific data and behavior.
 
 Typical usage: Structuring large codebases, creating reusable libraries.
 
-[Explore module organization in modules_example/](modules_example/)
+[Explore module organization in modules_example/](rust_tutorial/modules_example/)
 
 ## 6. Common Collections
 - Vectors: Growable arrays (Vec<T>).
@@ -55,7 +55,7 @@ Typical usage: Structuring large codebases, creating reusable libraries.
 
 Typical usage: Storing and manipulating collections of data efficiently.
 
-[Practice using collections in collections.rs](collections.rs)
+[Practice using collections in collections.rs](rust_tutorial/collections.rs)
 
 ## 7. Error Handling
 - panic! and unwinding: For unrecoverable errors.
@@ -64,7 +64,7 @@ Typical usage: Storing and manipulating collections of data efficiently.
 
 Typical usage: Robust error handling in applications, preventing crashes, and providing meaningful error messages.
 
-[See error handling examples in error_handling.rs](error_handling.rs)
+[See error handling examples in error_handling.rs](rust_tutorial/error_handling.rs)
 
 ## 8. Generic Types and Traits
 - Generic data types: Writing code that works with multiple types.
@@ -73,7 +73,7 @@ Typical usage: Robust error handling in applications, preventing crashes, and pr
 
 Typical usage: Writing flexible, reusable code that works with multiple types while maintaining type safety.
 
-[Explore generics and traits in generics_traits.rs](generics_traits.rs)
+[Explore generics and traits in generics_traits.rs](rust_tutorial/generics_traits.rs)
 
 ## 9. Lifetimes
 - Lifetime annotation syntax: Expressing the scope of references.
@@ -81,7 +81,7 @@ Typical usage: Writing flexible, reusable code that works with multiple types wh
 
 Typical usage: Ensuring references are valid for the duration they're used, preventing dangling references.
 
-[Practice lifetimes in lifetimes.rs](lifetimes.rs)
+[Practice lifetimes in lifetimes.rs](rust_tutorial/lifetimes.rs)
 
 ## 10. Closures and Iterators
 - Defining and using closures: Anonymous functions that can capture their environment.
@@ -89,7 +89,7 @@ Typical usage: Ensuring references are valid for the duration they're used, prev
 
 Typical usage: Functional programming patterns, data processing pipelines.
 
-[See closure and iterator examples in closures_iterators.rs](closures_iterators.rs)
+[See closure and iterator examples in closures_iterators.rs](rust_tutorial/closures_iterators.rs)
 
 ## 11. Smart Pointers
 - Box<T> for heap allocation: Storing data on the heap instead of the stack.
@@ -98,7 +98,7 @@ Typical usage: Functional programming patterns, data processing pipelines.
 
 Typical usage: Managing heap data, implementing complex data structures, interior mutability pattern.
 
-[Explore smart pointers in smart_pointers.rs](smart_pointers.rs)
+[Explore smart pointers in smart_pointers.rs](rust_tutorial/smart_pointers.rs)
 
 ## 12. Concurrency
 - Threads and spawn: Creating and managing threads.
@@ -107,7 +107,7 @@ Typical usage: Managing heap data, implementing complex data structures, interio
 
 Typical usage: Parallel processing, responsive applications, utilizing multi-core processors.
 
-[Practice concurrency in concurrency.rs](concurrency.rs)
+[Practice concurrency in concurrency.rs](rust_tutorial/concurrency.rs)
 
 ## 13. Unsafe Rust
 - When and why to use unsafe: Performing operations that the compiler can't guarantee are safe.
@@ -116,7 +116,7 @@ Typical usage: Parallel processing, responsive applications, utilizing multi-cor
 
 Typical usage: Interfacing with C libraries, implementing low-level optimizations, building safe abstractions.
 
-[See unsafe Rust examples in unsafe_rust.rs](unsafe_rust.rs)
+[See unsafe Rust examples in unsafe_rust.rs](rust_tutorial/unsafe_rust.rs)
 
 ## 14. Advanced Features
 - Advanced traits: Associated types, default type parameters, fully qualified syntax.
@@ -125,7 +125,7 @@ Typical usage: Interfacing with C libraries, implementing low-level optimization
 
 Typical usage: Building complex libraries, advanced API design, metaprogramming.
 
-[Explore advanced features in advanced.rs](advanced.rs)
+[Explore advanced features in advanced.rs](rust_tutorial/advanced.rs)
 
 ## 15. Testing and Documentation
 - Writing and running tests: Unit tests, integration tests, and test organization.
@@ -133,7 +133,52 @@ Typical usage: Building complex libraries, advanced API design, metaprogramming.
 
 Typical usage: Ensuring code correctness, maintaining large codebases, creating user-friendly libraries.
 
-[See testing examples in testing.rs](testing.rs)
+[See testing examples in testing.rs](rust_tutorial/testing.rs)
+
+# Quick Start
+
+To get started with Rust and run the sample code in this tutorial, follow these steps:
+
+1. Install Rust:
+   Visit https://www.rust-lang.org/tools/install and follow the instructions for your operating system.
+
+   Or use curl to install rustup
+   ```   
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+
+2. Verify the installation:
+   Open a terminal and run:
+   ```
+   rustc --version
+   cargo --version
+   ```
+   You should see version information for both commands.
+
+3. Run specific examples:
+   To run individual examples, use the following command:
+   ```
+   cd rust_tutorial
+   cargo run --bin <example_name>
+   ```
+   Replace <example_name> with the name of the example you want to run, such as:
+   ```
+   cargo run --bin introduction
+   cargo run --bin basics
+   cargo run --bin ownership
+   ```
+
+4. Explore and modify:
+   Feel free to explore the `src` directory, modify the example files, and re-run them to see how changes affect the output.
+
+Now you're ready to dive into the Rust tutorial! Each section in this guide corresponds to a specific example in the `src` directory. Follow along with the explanations and run the examples to get hands-on experience with Rust programming.
+
+For more advanced usage:
+- To build without running: `cargo build --bin <example_name>`
+- To run in release mode: `cargo run --bin <example_name> --release`
+- To see all available examples: `cargo run --bin`
+
+Happy coding with Rust!
 
 To run any of these examples, use the command:
 ```

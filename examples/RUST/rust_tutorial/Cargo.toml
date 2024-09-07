@@ -1,0 +1,64 @@
+[package]
+name = "rust_tutorial"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "introduction"
+path = "src/introduction.rs"
+
+[[bin]]
+name = "basics"
+path = "src/basics.rs"
+
+[[bin]]
+name = "ownership"
+path = "src/ownership.rs"
+
+[[bin]]
+name = "structs_enums"
+path = "src/structs_enums.rs"
+
+[[bin]]
+name = "collections"
+path = "src/collections.rs"
+
+[[bin]]
+name = "error_handling"
+path = "src/error_handling.rs"
+
+[[bin]]
+name = "generics_traits"
+path = "src/generics_traits.rs"
+
+[[bin]]
+name = "lifetimes"
+path = "src/lifetimes.rs"
+
+[[bin]]
+name = "closures_iterators"
+path = "src/closures_iterators.rs"
+
+[[bin]]
+name = "smart_pointers"
+path = "src/smart_pointers.rs"
+
+[[bin]]
+name = "concurrency"
+path = "src/concurrency.rs"
+
+[[bin]]
+name = "unsafe_rust"
+path = "src/unsafe_rust.rs"
+
+[[bin]]
+name = "advanced"
+path = "src/advanced.rs"
+
+[[bin]]
+name = "testing"
+path = "src/testing.rs"
