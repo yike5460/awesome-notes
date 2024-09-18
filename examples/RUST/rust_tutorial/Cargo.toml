@@ -24,6 +24,10 @@ name = "structs_enums"
 path = "src/structs_enums.rs"
 
 [[bin]]
+name = "module_package"
+path = "src/module_package.rs"
+
+[[bin]]
 name = "collections"
 path = "src/collections.rs"
 

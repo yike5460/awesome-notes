@@ -6,8 +6,7 @@ fn main() {
     // panic!("crash and burn");
 
     // Using Result for recoverable errors
-    let f = File::open("hello.txt");
-    let f = match f {
+    let _f = match File::open("hello.txt") {
         Ok(file) => file,
         Err(error) => {
             println!("Error opening file: {:?}", error);

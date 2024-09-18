@@ -1,4 +1,5 @@
 // Define a generic struct
+#[allow(dead_code)]
 struct Point<T> {
     x: T,
     y: T,
@@ -17,6 +18,7 @@ trait Summary {
 }
 
 // Implement the trait for a struct
+#[allow(dead_code)]
 struct NewsArticle {
     headline: String,
     location: String,
@@ -36,8 +38,8 @@ fn notify<T: Summary>(item: &T) {
 }
 
 fn main() {
-    let integer_point = Point::new(5, 10);
-    let float_point = Point::new(1.0, 4.0);
+    let _integer_point = Point::new(5, 10);
+    let _float_point = Point::new(1.0, 4.0);
 
     let article = NewsArticle {
         headline: String::from("Rust 1.0 Released"),

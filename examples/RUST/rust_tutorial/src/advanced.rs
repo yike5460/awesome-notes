@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 // Advanced Features
 
 // Advanced traits: Associated types
@@ -53,9 +55,6 @@ impl std::fmt::Display for Wrapper {
     }
 }
 
-// Type aliases
-type Kilometers = i32;
-
 // The Never type
 fn bar() -> ! {
     panic!("This call never returns!");
@@ -75,6 +74,12 @@ fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
     Box::new(|x| x + 1)
 }
 
+// Change this:
+// type Kilometers = i32;
+
+// To this:
+struct Kilometers(i32);
+
 fn main() {
     println!("Dog's baby name: {}", <Dog as Animal>::baby_name());
 
@@ -82,7 +87,7 @@ fn main() {
     println!("w = {}", w);
 
     let kilometers = Kilometers(5);
-    println!("5 kilometers is {} kilometers", kilometers);
+    println!("5 kilometers is {} kilometers", kilometers.0);
 
     let answer = do_twice(add_one, 5);
     println!("The answer is: {}", answer);
