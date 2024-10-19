@@ -12,3 +12,6 @@ sample_models
 *.key
 *.p12
 *.context.json
+
+# rust tutorial target directory
+**/target/
