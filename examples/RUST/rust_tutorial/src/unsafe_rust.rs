@@ -7,6 +7,7 @@ fn main() {
     let r1 = &num as *const i32;
     let r2 = &mut num as *mut i32;
 
+    // Unsafe block for dereferencing raw pointers
     unsafe {
         println!("r1 is: {}", *r1);
         println!("r2 is: {}", *r2);
@@ -53,3 +54,20 @@ fn split_at_mut(slice: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
 extern "C" {
     fn abs(input: i32) -> i32;
 }
+
+// Typical usage of unsafe Rust:
+// - Dereferencing raw pointers
+// - Calling unsafe functions or methods
+// - Implementing unsafe traits
+// - Mutating static variables
+// - Accessing fields of unions
+
+// Error-prone mistakes for new learners:
+// 1. Overusing unsafe when safe alternatives exist
+// 2. Not properly checking bounds or conditions in unsafe code
+// 3. Creating data races or undefined behavior through incorrect use of raw pointers
+// 4. Forgetting that unsafe doesn't turn off borrowing rules for references
+// 5. Assuming that all operations within an unsafe block are automatically safe
+
+// Remember: Unsafe Rust is a powerful tool, but it should be used sparingly and carefully.
+// Always try to encapsulate unsafe code within safe abstractions.

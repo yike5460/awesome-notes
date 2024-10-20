@@ -2,15 +2,19 @@
 
 // Advanced Features in Rust
 
-// Advanced traits: Associated types
-// Associated types allow you to specify placeholder types in trait definitions
+/*
+Advanced traits: Associated types
+Associated types allow you to specify placeholder types in trait definitions
+*/
 trait Iterator {
     type Item; // Associated type
     fn next(&mut self) -> Option<Self::Item>;
 }
 
-// Default type parameters
-// You can specify default types for generic type parameters
+/*
+Default type parameters
+You can specify default types for generic type parameters
+*/
 trait Add<RHS=Self> {
     type Output;
     fn add(self, rhs: RHS) -> Self::Output;
@@ -35,7 +39,9 @@ impl Animal for Dog {
     }
 }
 
-// Supertraits: Requiring one trait's functionality within another trait
+/*
+Supertraits: Requiring one trait's functionality within another trait
+*/
 trait OutlinePrint: std::fmt::Display {
     fn outline_print(&self) {
         let output = self.to_string();
@@ -77,8 +83,6 @@ fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
 }
 
 // Type aliases for improved readability
-// type Kilometers = i32;
-// Changed to a newtype for better type safety
 struct Kilometers(i32);
 
 fn main() {
@@ -102,21 +106,26 @@ fn main() {
     println!("Closure result: {}", closure(5));
 }
 
-// Typical usage:
-// - Associated types: When a trait has a type that's determined by the implementor
-// - Default type parameters: For reducing boilerplate in common cases
-// - Fully qualified syntax: When you need to disambiguate between multiple implementations
-// - Supertraits: When one trait depends on another trait's functionality
-// - Newtype pattern: For implementing external traits on external types
-// - Never type: For functions that are intended to never return (e.g., continuous loops, panics)
-// - Function pointers: When you want to pass functions as arguments
-// - Returning closures: When you need to return a function-like object from a function
+/*
+Typical usage:
+- Associated types: When a trait has a type that's determined by the implementor
+- Default type parameters: For reducing boilerplate in common cases
+- Fully qualified syntax: When you need to disambiguate between multiple implementations
+- Supertraits: When one trait depends on another trait's functionality
+- Newtype pattern: For implementing external traits on external types
+- Never type: For functions that are intended to never return (e.g., continuous loops, panics)
+- Function pointers: When you want to pass functions as arguments
+- Returning closures: When you need to return a function-like object from a function
 
-// Error-prone mistakes:
-// 1. Forgetting to use fully qualified syntax when there are naming conflicts
-// 2. Misusing the newtype pattern and losing the functionality of the wrapped type
-// 3. Incorrectly implementing supertraits
-// 4. Misunderstanding the behavior of the Never type
-// 5. Confusing function pointers with closures
-// 6. Not using the correct trait bounds when returning closures
-// 7. Overusing advanced features when simpler solutions would suffice
+Error-prone mistakes for new learners:
+1. Forgetting to use fully qualified syntax when there are naming conflicts
+2. Misusing the newtype pattern and losing the functionality of the wrapped type
+3. Incorrectly implementing supertraits
+4. Misunderstanding the behavior of the Never type
+5. Confusing function pointers with closures
+6. Not using the correct trait bounds when returning closures
+7. Overusing advanced features when simpler solutions would suffice
+
+Remember: These advanced features are powerful but can make code more complex.
+Use them judiciously and only when they provide clear benefits to your code structure.
+*/
