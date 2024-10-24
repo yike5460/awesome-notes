@@ -21,9 +21,9 @@ mod shapes {
     }
 
     // Private function
-    fn helper_function() {
-        println!("This is a private helper function");
-    }
+    // fn helper_function() {
+    //     println!("This is a private helper function");
+    // }
 
     // Public module within shapes
     pub mod utils {

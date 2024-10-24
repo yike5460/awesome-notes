@@ -1,4 +1,23 @@
-// Generics and Traits in Rust
+/* Generics and Traits in Rust
+Note: The above function allows for different types that implement Summary
+to be used in the same collection, demonstrating dynamic dispatch.
+This is useful when you need to work with multiple types that share a common trait
+at runtime, but don't know the exact types at compile time.
+The 'dyn' keyword is used to create a trait object, enabling dynamic dispatch.
+
+Typical usage of generics and traits:
+- Use generics when you want to write code that can work with multiple types
+- Use traits to define shared behavior between different types
+- Use trait bounds to specify what functionality a type must have
+- Use trait objects when you need runtime polymorphism
+
+Error-prone mistakes for new learners:
+1. Forgetting to implement all required methods of a trait
+2. Misunderstanding the difference between static and dynamic dispatch
+3. Overcomplicating generic constraints when simpler bounds would suffice
+4. Not considering performance implications of dynamic dispatch vs static dispatch
+5. Forgetting that each generic parameter must be used at least once in the function signature
+*/
 
 /*
 Generic struct definition
@@ -70,7 +89,7 @@ impl Summary for NewsArticle {
     // Override the summarize method
     // We must implement this method as it has no default implementation
     fn summarize(&self) -> String {
-        format!("{}, by {} ({})", self.headline, self.author, self.location)
+        format!("{}, by {} ({})", self.headline, self.author, self.location) // The '!' indicates that format! is a macro, not a regular function
     }
     // Note: We don't need to implement default_summary as it has a default implementation
     // However, we could override it here if we wanted to
@@ -83,16 +102,40 @@ fn notify<T: Summary>(item: &T) {
 }
 
 /*
+Using trait bounds:
+A trait bound is a constraint on a generic type parameter that specifies what traits the type must implement. It is used to ensure that the type has the necessary capabilities to be used in the context where the trait bound is specified.
 Alternative syntax for multiple trait bounds:
-fn complex_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 { ... }
+<T: Display + Clone, U: Clone + Debug> specifies the trait bounds for T and U
+- T must implement both Display and Clone traits
+- U must implement both Clone and Debug traits
 
-You can also use 'where' clauses for more complex bounds:
-fn some_function<T, U>(t: &T, u: &U) -> i32
+fn complex_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
+    // Display allows the type to be formatted as a string
+    // Clone allows the type to be duplicated
+    // Debug allows the type to be printed for debugging purposes
+
+    // The function takes references to T and U (&T and &U)
+    // This avoids taking ownership of the passed values
+
+    // The function returns an i32 (32-bit signed integer)
+
+    // Function body would go here
+    // ...
+}
+
+// Alternative syntax using a where clause for improved readability:
+fn complex_function_alt<T, U>(t: &T, u: &U) -> i32
 where
     T: Display + Clone,
     U: Clone + Debug
-{ ... }
-This syntax is often preferred for readability when there are many bounds
+{
+    // This achieves the same effect as the previous function
+    // but separates the trait bounds from the function signature
+    // This is often preferred when there are many or complex bounds
+
+    // Function body would go here
+    // ...
+}
 */
 
 fn main() {
@@ -131,31 +174,14 @@ fn main() {
 }
 
 // Advanced usage: Trait objects for runtime polymorphism
-fn print_summaries(summaries: &[&dyn Summary]) {
+fn _print_summaries(summaries: &[&dyn Summary]) {
+    /*
+    &[...] : Reference to a slice (dynamic-sized view into a contiguous sequence)
+    &dyn Summary: Reference to a trait object of type Summary
+    Combined: &[&dyn Summary] is a slice of trait object references
+    This allows for a collection of different types that implement Summary
+    */
     for item in summaries {
-        println!("{}", item.summarize());
+        println!("{}", item.summarize()); // The '!' is a macro invocation operator. println! is a macro, not a regular function.
     }
 }
-
-/*
-Note: The above function allows for different types that implement Summary
-to be used in the same collection, demonstrating dynamic dispatch.
-This is useful when you need to work with multiple types that share a common trait
-at runtime, but don't know the exact types at compile time.
-The 'dyn' keyword is used to create a trait object, enabling dynamic dispatch.
-*/
-
-/*
-Typical usage of generics and traits:
-- Use generics when you want to write code that can work with multiple types
-- Use traits to define shared behavior between different types
-- Use trait bounds to specify what functionality a type must have
-- Use trait objects when you need runtime polymorphism
-
-Error-prone mistakes for new learners:
-1. Forgetting to implement all required methods of a trait
-2. Misunderstanding the difference between static and dynamic dispatch
-3. Overcomplicating generic constraints when simpler bounds would suffice
-4. Not considering performance implications of dynamic dispatch vs static dispatch
-5. Forgetting that each generic parameter must be used at least once in the function signature
-*/
