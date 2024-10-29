@@ -123,6 +123,19 @@ fn main() {
 
     // Demonstrating interior mutability
     // We can modify the children of leaf even though leaf is immutable
+    // borrow_mut() returns a mutable reference to the wrapped value
+    // It's part of RefCell's API for interior mutability
+    // Other related methods include:
+    // - borrow(): Returns an immutable reference
+    // - try_borrow(): Attempts to borrow immutably, returns Result
+    // - try_borrow_mut(): Attempts to borrow mutably, returns Result
+    
+    // Example of borrow():
+    let borrowed = leaf.children.borrow();
+    println!("Current children count: {} (It's 0 because 'leaf' was initially created with an empty vector)", borrowed.len());
+    drop(borrowed); // Explicitly drop the borrow to avoid borrow conflicts
+
+    // Now we can borrow mutably and modify
     leaf.children.borrow_mut().push(Rc::new(Node {
         value: 4,
         children: RefCell::new(vec![]),
