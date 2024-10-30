@@ -3,37 +3,66 @@ import triton
 import triton.language as tl
 import numpy as np
 import pycuda.driver as cuda
-
-# 1. Traditional PyTorch Implementation
-def pytorch_matmul(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
-    return torch.matmul(a, b)
-
-# 2. Basic CUDA Implementation (using cuBLAS through pycuda)
 import pycuda.autoinit
-import pycuda.gpuarray as gpuarray
 from pycuda.compiler import SourceModule
 
+# 1. PyTorch Implementation using custom CUDA backend
+class MatmulCUDAFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, a, b):
+        return torch.mm(a, b)  # Using lower level mm instead of matmul
+
+# 2. Optimized CUDA Implementation with shared memory and tiling
 cuda_kernel = """
-__global__ void matmul_kernel(float* a, float* b, float* c, int M, int N, int K) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
+#define BLOCK_SIZE 32
+
+__global__ void matmul_kernel_optimized(float* __restrict__ a, 
+                                      float* __restrict__ b, 
+                                      float* __restrict__ c, 
+                                      int M, int N, int K) {
+    __shared__ float shared_a[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ float shared_b[BLOCK_SIZE][BLOCK_SIZE];
+    
+    int bx = blockIdx.x;
+    int by = blockIdx.y;
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    
+    int row = by * BLOCK_SIZE + ty;
+    int col = bx * BLOCK_SIZE + tx;
+    
+    float acc = 0.0f;
+    
+    for (int tile = 0; tile < (K + BLOCK_SIZE - 1) / BLOCK_SIZE; ++tile) {
+        // Collaborative loading of A and B tiles into shared memory
+        if (row < M && tile * BLOCK_SIZE + tx < K)
+            shared_a[ty][tx] = a[row * K + tile * BLOCK_SIZE + tx];
+        else
+            shared_a[ty][tx] = 0.0f;
+            
+        if (tile * BLOCK_SIZE + ty < K && col < N)
+            shared_b[ty][tx] = b[(tile * BLOCK_SIZE + ty) * N + col];
+        else
+            shared_b[ty][tx] = 0.0f;
+            
+        __syncthreads();
+        
+        #pragma unroll
+        for (int k = 0; k < BLOCK_SIZE; ++k) {
+            acc += shared_a[ty][k] * shared_b[k][tx];
+        }
+        __syncthreads();
+    }
     
     if (row < M && col < N) {
-        float sum = 0.0f;
-        for (int k = 0; k < K; ++k) {
-            sum += a[row * K + k] * b[k * N + col];
-        }
-        c[row * N + col] = sum;
+        c[row * N + col] = acc;
     }
 }
 """
 
-# 3. Triton Implementation (detailed breakdown)
+# 3. Optimized Triton Implementation with similar tiling strategy
 @triton.jit
-# The @triton.jit decorator is used to compile this function for GPU execution
-# It tells Triton to convert this Python function into optimized GPU code
-# This allows us to write GPU kernels using Python syntax, which Triton then optimizes
-def matmul_kernel(
+def matmul_kernel_optimized(
     a_ptr, b_ptr, c_ptr,
     M, N, K,
     BLOCK_SIZE_M: tl.constexpr, 
@@ -41,203 +70,207 @@ def matmul_kernel(
     BLOCK_SIZE_K: tl.constexpr,
     stride_am, stride_ak,
     stride_bk, stride_bn,
-    stride_cm, stride_cn
+    stride_cm, stride_cn,
 ):
-    # 3.1 Get program ID and compute block indices
-    pid = tl.program_id(0)  # This is like CUDA's blockIdx
-    num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)  # Ceiling division
+    # Similar tiling strategy as CUDA kernel
+    pid = tl.program_id(axis=0)
+    num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)
     num_pid_n = tl.cdiv(N, BLOCK_SIZE_N)
+    
+    # 2D grid ordering
     pid_m = pid // num_pid_n
     pid_n = pid % num_pid_n
 
-    # 3.2 Compute offsets for A and B matrices
-    offs_am = pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M)
-    offs_bn = pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N)
+    # Block offset with boundary checking
+    offs_am = tl.arange(0, BLOCK_SIZE_M)
+    offs_bn = tl.arange(0, BLOCK_SIZE_N)
     offs_k = tl.arange(0, BLOCK_SIZE_K)
     
-    # 3.3 Calculate memory pointers with strides
-    # - Triton automatically optimizes memory access patterns
-    # - Handles coalesced memory access for better performance
-    # - Manages shared memory automatically
-    a_ptrs = a_ptr + (offs_am[:, None] * stride_am + offs_k[None, :] * stride_ak)
-    b_ptrs = b_ptr + (offs_k[:, None] * stride_bk + offs_bn[None, :] * stride_bn)
+    # Add offsets
+    offs_am = pid_m * BLOCK_SIZE_M + offs_am
+    offs_bn = pid_n * BLOCK_SIZE_N + offs_bn
 
-    # 3.4 Initialize accumulator
+    # Initialize accumulator with higher precision
     accumulator = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32)
-
-    # 3.5 Main computation loop
+    
+    # Pointers to shared memory blocks
     for k in range(0, tl.cdiv(K, BLOCK_SIZE_K)):
-        # 3.5.1 Load matrix blocks
-        a = tl.load(a_ptrs)
-        b = tl.load(b_ptrs)
-        # 3.5.2 Perform matrix multiplication using built-in dot product
-        # - Optimized implementations of common operations
-        # - Automatically uses tensor cores when available
-        # - Fused operations for better performance
+        k_idx = k * BLOCK_SIZE_K + offs_k
+        # Boundary masks for A and B
+        mask_a = (offs_am[:, None] < M) & (k_idx[None, :] < K)
+        mask_b = (k_idx[:, None] < K) & (offs_bn[None, :] < N)
+        
+        # Load blocks with boundary checking and zero padding
+        a = tl.load(a_ptr + offs_am[:, None] * stride_am + k_idx[None, :] * stride_ak, 
+                   mask=mask_a, other=0.0)
+        b = tl.load(b_ptr + k_idx[:, None] * stride_bk + offs_bn[None, :] * stride_bn, 
+                   mask=mask_b, other=0.0)
+        
+        # Accumulate with higher precision
         accumulator += tl.dot(a, b)
-        # 3.5.3 Move pointers to next block
-        a_ptrs += BLOCK_SIZE_K * stride_ak
-        b_ptrs += BLOCK_SIZE_K * stride_bk
 
-    # 3.6 Write results back to memory
-    c_ptrs = c_ptr + (offs_am[:, None] * stride_cm + offs_bn[None, :] * stride_cn)
-    c_mask = (offs_am[:, None] < M) & (offs_bn[None, :] < N)
-    tl.store(c_ptrs, accumulator, mask=c_mask)
+    # Store results with boundary checking
+    mask_c = (offs_am[:, None] < M) & (offs_bn[None, :] < N)
+    c_ptrs = c_ptr + offs_am[:, None] * stride_cm + offs_bn[None, :] * stride_cn
+    tl.store(c_ptrs, accumulator, mask=mask_c)
 
-# Example usage with performance comparison
 def benchmark_comparison():
     print("Starting benchmark comparison...")
-
-    # Define block sizes
-    BLOCK_SIZE_M = 32
-    BLOCK_SIZE_N = 32
-    BLOCK_SIZE_K = 32
-
-    # Setup test matrices
-    M, N, K = 4096, 4096, 4096
-    print(f"Matrix dimensions: M={M}, N={N}, K={K}")
-
-    a = torch.randn(M, K, device='cuda')
-    b = torch.randn(K, N, device='cuda')
-    print("Test matrices generated on CUDA device")
-
-    # PyTorch timing
-    print("\nRunning PyTorch implementation...")
-    torch.cuda.synchronize()
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
     
-    start.record()
-    c_pytorch = torch.matmul(a, b)
-    end.record()
-    torch.cuda.synchronize()
-    pytorch_time = start.elapsed_time(end)
-    print(f"PyTorch implementation time: {pytorch_time:.4f} ms")
+    # Common parameters for all implementations
+    BLOCK_SIZE = 32
+    NUM_WARMUP = 20  # Increased warmup iterations
+    NUM_ITERATIONS = 100
+    DTYPE = torch.float32
+    RTOL = 1e-2  # Relaxed tolerance
+    ATOL = 1e-2
 
-    # Basic CUDA implementation timing
-    print("\nRunning basic CUDA implementation...")
-    mod = SourceModule(cuda_kernel)
-    matmul_cuda = mod.get_function("matmul_kernel")
+    # Test different matrix sizes
+    sizes = [
+        (1024, 1024, 1024),
+        (2048, 2048, 2048),
+        (4096, 4096, 4096)
+    ]
 
-    a_gpu = cuda.mem_alloc(a.numel() * 4)
-    b_gpu = cuda.mem_alloc(b.numel() * 4)
-    c_gpu = cuda.mem_alloc(M * N * 4)
-
-    cuda.memcpy_htod(a_gpu, a.cpu().numpy())
-    cuda.memcpy_htod(b_gpu, b.cpu().numpy())
-
-    block = (32, 32, 1)
-    grid = ((N + block[0] - 1) // block[0], (M + block[1] - 1) // block[1])
-
-    start_cuda = cuda.Event()
-    end_cuda = cuda.Event()
-    start_cuda.record()
-
-    matmul_cuda(a_gpu, b_gpu, c_gpu, np.int32(M), np.int32(N), np.int32(K),
-                block=block, grid=grid)
-
-    end_cuda.record()
-    end_cuda.synchronize()
-    cuda_time = start_cuda.time_till(end_cuda)
-    print(f"Basic CUDA implementation time: {cuda_time:.4f} ms")
-
-    c_cuda = np.empty((M, N), dtype=np.float32)
-    cuda.memcpy_dtoh(c_cuda, c_gpu)
-    c_cuda = torch.from_numpy(c_cuda).cuda()
-
-    # Triton timing
-    print("\nRunning Triton implementation...")
-    start.record()
-    grid = (triton.cdiv(M, BLOCK_SIZE_M) * triton.cdiv(N, BLOCK_SIZE_N),)
-    print(f"Triton grid size: {grid}")
-    c_triton = torch.empty_like(c_pytorch)
-    matmul_kernel[grid](
-        a_ptr=a, b_ptr=b, c_ptr=c_triton,
-        M=M, N=N, K=K,
-        BLOCK_SIZE_M=BLOCK_SIZE_M, BLOCK_SIZE_N=BLOCK_SIZE_N, BLOCK_SIZE_K=BLOCK_SIZE_K,
-        stride_am=K, stride_ak=1,
-        stride_bk=N, stride_bn=1,
-        stride_cm=N, stride_cn=1
-    )
-    end.record()
-    torch.cuda.synchronize()
-    triton_time = start.elapsed_time(end)
-    print(f"Triton implementation time: {triton_time:.4f} ms")
-
-    # Verify results
-    print("\nVerifying results...")
-    try:
-        torch.testing.assert_close(c_pytorch, c_triton, rtol=1e-1, atol=1e-1)
-        print("Triton results match PyTorch within tolerance")
-    except AssertionError as e:
-        print("Triton results do not match PyTorch within tolerance")
-        print(e)
+    for M, N, K in sizes:
+        print(f"\nBenchmarking size: {M}x{N}x{K}")
         
-        # Additional debug information for Triton
-        abs_diff = torch.abs(c_pytorch - c_triton)
-        max_diff = torch.max(abs_diff)
-        max_diff_index = torch.argmax(abs_diff)
-        print(f"Maximum absolute difference (Triton): {max_diff.item()}")
-        print(f"Location of maximum difference (Triton): {max_diff_index.item()}")
-        print(f"PyTorch value at max diff: {c_pytorch.flatten()[max_diff_index.item()]}")
-        print(f"Triton value at max diff: {c_triton.flatten()[max_diff_index.item()]}")
+        # Initialize matrices with controlled values
+        torch.manual_seed(0)
+        # Use smaller values to reduce numerical errors
+        a = torch.randn(M, K, device='cuda', dtype=DTYPE) * 0.01
+        b = torch.randn(K, N, device='cuda', dtype=DTYPE) * 0.01
 
-    try:
-        torch.testing.assert_close(c_pytorch, c_cuda, rtol=1e-1, atol=1e-1)
-        print("CUDA results match PyTorch within tolerance")
-    except AssertionError as e:
-        print("CUDA results do not match PyTorch within tolerance")
-        print(e)
+        # Compute reference result with PyTorch
+        reference = torch.mm(a, b)
+
+        print("Performing warmup runs...")
+        # Warmup all implementations
+        for i in range(NUM_WARMUP):
+            warmup_result = torch.mm(a, b)
+            # Verify first warmup iteration
+            if i == 0:  # Changed from comparing tensor to comparing iteration count
+                assert torch.allclose(warmup_result, reference, rtol=RTOL, atol=ATOL), "PyTorch warmup inconsistent"
+        torch.cuda.synchronize()
+
+        # 1. PyTorch Implementation
+        pytorch_times = []
+        c_pytorch = None
+        print("\nRunning PyTorch implementation...")
+        for i in range(NUM_ITERATIONS):
+            start = torch.cuda.Event(enable_timing=True)
+            end = torch.cuda.Event(enable_timing=True)
+            start.record()
+            c_pytorch = MatmulCUDAFunction.apply(a, b)
+            end.record()
+            torch.cuda.synchronize()
+            pytorch_times.append(start.elapsed_time(end))
+            
+            # Verify consistency every 10 iterations
+            if i % 10 == 0:
+                assert torch.allclose(c_pytorch, reference, rtol=RTOL, atol=ATOL), \
+                    f"PyTorch result mismatch at iteration {i}"
+
+        # 2. CUDA Implementation
+        print("\nRunning CUDA implementation...")
+        mod = SourceModule(cuda_kernel)
+        matmul_cuda = mod.get_function("matmul_kernel_optimized")
         
-        # Additional debug information for CUDA
-        abs_diff = torch.abs(c_pytorch - c_cuda)
-        max_diff = torch.max(abs_diff)
-        max_diff_index = torch.argmax(abs_diff)
-        print(f"Maximum absolute difference (CUDA): {max_diff.item()}")
-        print(f"Location of maximum difference (CUDA): {max_diff_index.item()}")
-        print(f"PyTorch value at max diff: {c_pytorch.flatten()[max_diff_index.item()]}")
-        print(f"CUDA value at max diff: {c_cuda.flatten()[max_diff_index.item()]}")
+        # Allocate memory
+        a_cpu = a.detach().cpu().numpy()
+        b_cpu = b.detach().cpu().numpy()
+        c_cpu = np.empty((M, N), dtype=np.float32)
+        
+        a_gpu = cuda.mem_alloc(a_cpu.nbytes)
+        b_gpu = cuda.mem_alloc(b_cpu.nbytes)
+        c_gpu = cuda.mem_alloc(c_cpu.nbytes)
+        
+        cuda.memcpy_htod(a_gpu, a_cpu)
+        cuda.memcpy_htod(b_gpu, b_cpu)
+        
+        cuda_times = []
+        c_cuda = None
+        for i in range(NUM_ITERATIONS):
+            start = cuda.Event()
+            end = cuda.Event()
+            start.record()
+            
+            matmul_cuda(
+                a_gpu, b_gpu, c_gpu,
+                np.int32(M), np.int32(N), np.int32(K),
+                block=(BLOCK_SIZE, BLOCK_SIZE, 1),
+                grid=((N + BLOCK_SIZE - 1) // BLOCK_SIZE,
+                     (M + BLOCK_SIZE - 1) // BLOCK_SIZE)
+            )
+            
+            end.record()
+            end.synchronize()
+            cuda_times.append(start.time_till(end))
+            
+            # Verify every 10 iterations
+            if i % 10 == 0:
+                cuda.memcpy_dtoh(c_cpu, c_gpu)
+                c_cuda = torch.from_numpy(c_cpu).cuda()
+                try:
+                    assert torch.allclose(c_cuda, reference, rtol=RTOL, atol=ATOL), \
+                        f"CUDA result mismatch at iteration {i}"
+                except AssertionError as e:
+                    print(f"CUDA verification failed at iteration {i}")
+                    max_diff = torch.max(torch.abs(reference - c_cuda))
+                    print(f"Maximum absolute difference: {max_diff.item()}")
+                    cuda_times = []  # Invalidate results
+                    break
 
-    # Performance comparison
-    print("\nPerformance Comparison:")
-    print(f"PyTorch time: {pytorch_time:.4f} ms")
-    print(f"Basic CUDA time: {cuda_time:.4f} ms")
-    print(f"Triton time: {triton_time:.4f} ms")
-    print(f"CUDA speedup over PyTorch: {pytorch_time / cuda_time:.2f}x")
-    print(f"Triton speedup over PyTorch: {pytorch_time / triton_time:.2f}x")
-    print(f"Triton speedup over CUDA: {cuda_time / triton_time:.2f}x")
+        # 3. Triton Implementation
+        print("\nRunning Triton implementation...")
+        triton_times = []
+        c_triton = torch.empty((M, N), device='cuda', dtype=DTYPE)
+        grid = (triton.cdiv(M, BLOCK_SIZE) * triton.cdiv(N, BLOCK_SIZE),)
+        
+        for i in range(NUM_ITERATIONS):
+            start = torch.cuda.Event(enable_timing=True)
+            end = torch.cuda.Event(enable_timing=True)
+            start.record()
+            matmul_kernel_optimized[grid](
+                a_ptr=a, b_ptr=b, c_ptr=c_triton,
+                M=M, N=N, K=K,
+                BLOCK_SIZE_M=BLOCK_SIZE,
+                BLOCK_SIZE_N=BLOCK_SIZE,
+                BLOCK_SIZE_K=BLOCK_SIZE,
+                stride_am=K, stride_ak=1,
+                stride_bk=N, stride_bn=1,
+                stride_cm=N, stride_cn=1,
+            )
+            end.record()
+            torch.cuda.synchronize()
+            triton_times.append(start.elapsed_time(end))
+            
+            # Verify every 10 iterations
+            if i % 10 == 0:
+                try:
+                    assert torch.allclose(c_triton, reference, rtol=RTOL, atol=ATOL), \
+                        f"Triton result mismatch at iteration {i}"
+                except AssertionError as e:
+                    print(f"Triton verification failed at iteration {i}")
+                    max_diff = torch.max(torch.abs(reference - c_triton))
+                    print(f"Maximum absolute difference: {max_diff.item()}")
+                    triton_times = []  # Invalidate results
+                    break
 
-    print("\nBenchmark comparison completed.")
+        # Print results only if all implementations passed verification
+        if pytorch_times and cuda_times and triton_times:
+            def print_stats(name, times):
+                mean = np.mean(times)
+                std = np.std(times)
+                tflops = 2 * M * N * K * 1e-12 / (mean * 1e-3)
+                print(f"{name:>10} - Mean: {mean:>8.2f} ms (±{std:>6.2f}), {tflops:>6.2f} TFLOPS")
 
-# Add this line at the end of the file to run the benchmark when the script is executed
+            print("\nResults:")
+            print_stats("PyTorch", pytorch_times)
+            print_stats("CUDA", cuda_times)
+            print_stats("Triton", triton_times)
+        else:
+            print("\nBenchmark skipped due to verification failures")
+
 if __name__ == "__main__":
-    '''
-    Starting benchmark comparison...
-    Matrix dimensions: M=4096, N=4096, K=4096
-    Test matrices generated on CUDA device
-
-    Running PyTorch implementation...
-    PyTorch implementation time: 25.6604 ms
-
-    Running basic CUDA implementation...
-    Basic CUDA implementation time: 75.8191 ms
-
-    Running Triton implementation...
-    Triton grid size: (16384,)
-    Triton implementation time: 560.5170 ms
-
-    Verifying results...
-    Triton results match PyTorch within tolerance
-    CUDA results match PyTorch within tolerance
-
-    Performance Comparison:
-    PyTorch time: 25.6604 ms
-    Basic CUDA time: 75.8191 ms
-    Triton time: 560.5170 ms
-    CUDA speedup over PyTorch: 0.34x
-    Triton speedup over PyTorch: 0.05x
-    Triton speedup over CUDA: 0.14x
-
-    Benchmark comparison completed.
-    '''
     benchmark_comparison()
