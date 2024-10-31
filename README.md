@@ -7,19 +7,26 @@
   - [API Design](#api-design)
   - [Container](#container)
   - [GPU](#gpu)
+  - [RUST](#rust)
+  - [MAD](#mad)
 - [GeneativeAI](#geneativeai)
   - [txt2txt](#txt2txt)
-    - [Bert](#bert)
-    - [Claude](#claude)
+    - [Agent](#agent)
+    - [Claude3](#claude3)
+    - [Finetune](#finetune)
     - [LCEL](#lcel)
+    - [MLM](#mlm)
     - [RAG](#rag)
+    - [Web Integration](#web-integration)
   - [txt2img2vid](#txt2img2vid)
-    - [LoRA](#lora)
+    - [CatScradle](#catscradle)
     - [CompyUI](#compyui)
+    - [LoRA](#lora)
     - [sd3dalle](#sd3dalle)
 - [DevOps](#devops)
-  - [Custom workflow](#custom-workflow)
-  - [Repos sync](#repos-sync)
+  - [Constructor](#constructor)
+  - [Container](#container)
+  - [Math](#math)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -29,55 +36,87 @@
 ## Infrastructure
 
 ### UT Pipeline
-- [How to setup UT Pipeline](docs/how_to_setup_ut_pipeline.md)
-
-### API Design
-- [How to design an API](docs/how_to_design_api.md)
-
-### Container
-- [Hosting model on Kubernetes](docs/hosting_model_on_kubernetes.md)
-- [Explore GPU feature on Kubernetes](docs/explore_gpu_feature_on_kubernetes.md)
+Example implementation of unit testing pipeline with Selenium and Poetry:
+- [UT Pipeline Example](examples/ut_pipeline)
 
 ### GPU
-- [CUDA](docs/cuda.md)
-- [Parallel Programming](docs/gpu_arch_and_cuda_programming.md)
+- [CUDA Programming](examples/GPU/CUDA)
+  - LIFE Game implementation using CUDA
+  - RDMA implementation
+- [Parallel Processing](examples/GPU/parallel_processing)
+  - Process lifecycle management
+  - Threading and locking examples
+  - Parallel processing patterns
+
+### RUST
+- [Rust Tutorial](examples/RUST/rust_tutorial)
+  - Comprehensive examples covering Rust fundamentals
+  - Advanced Rust features and patterns
+
+### MAD (Modern Application Development)
+- [Buttonize App Example](examples/MAD/my-buttonize-app)
+  - AWS CDK implementation
+  - Discount code generator application
 
 ## GeneativeAI
 
 ### txt2txt
 
-#### Bert
-- [Read more about Bert](docs/train_your_first_bert.md)
+#### Agent
+- [Web Agent implementation with PyAutoGUI](examples/txt2txt/Agent/webAgent)
+- [Triton acceleration examples](examples/txt2txt/Agent/AgentWeb/tritonSample.py)
 
-#### Claude
-- [Read more about Claude](docs/take_a_look_on_claude3.md)
+#### Claude3
+- [Claude3 integration examples](examples/txt2txt/Claude3)
+
+#### Finetune
+- [Model fine-tuning examples](examples/txt2txt/Finetune)
 
 #### LCEL
-- [Read more about LCEL](examples/txt2txt/LCEL/LCEL_sample.ipynb)
+- [LangChain Expression Language examples](examples/txt2txt/LCEL)
+
+#### MLM
+- [Masked Language Model implementations](examples/txt2txt/MLM)
 
 #### RAG
-- [Read more about RAG](examples/txt2txt/RAG)
-- [Create reranking model in RAG](docs/create_reranking_model_in_rag.md)
+- [Retrieval Augmented Generation examples](examples/txt2txt/RAG)
+- [Role Play examples](examples/txt2txt/rolePlay)
+
+#### Web Integration
+- [Web crawler implementation](examples/txt2txt/webCrawler)
+- [Web search integration](examples/txt2txt/webSearch)
 
 ### txt2img2vid
 
-#### LoRA
-- [Read more about LoRA](docs/train_your_first_lora.md)
+#### CatScradle
+- [Image generation examples](examples/txt2img2vid/CatScradle)
 
 #### CompyUI
-- [Read more about CompyUI](examples/txt2img2vid/CompyUI)
+- [ComfyUI integration](examples/txt2img2vid/CompyUI)
+
+#### LoRA
+- [Low-Rank Adaptation training examples](examples/txt2img2vid/LoRA)
 
 #### sd3dalle
-- [Read more about sd3dalle](examples/txt2img2vid/sd3dalle)
+- [Stable Diffusion and DALL-E integration](examples/txt2img2vid/sd3dalle)
 
 ## DevOps
 
-### Custom workflow
-- [How to create a custom workflow](docs/custom_workflow_runner_with_cloud.md)
+### Constructor
+- [API implementation examples](examples/constructor/src)
+- [Lambda function examples](examples/constructor/lambda)
+- [API Documentation](examples/constructor/API.md)
 
-### Repos sync
-- [How to sync repos](docs/sync_repos.md)
+### Container
+- [Kubernetes deployment examples](examples/container/k8s)
+- [Container management utilities](examples/container/depot)
+- [Encryption utilities](examples/container/encrypt)
+
+### Math
+- [Mathematical computation examples](examples/math/math.ipynb)
 
 ## Contributing
+Please read our contributing guidelines before submitting pull requests.
 
 ## License
+This project is licensed under the terms specified in the LICENSE file.
