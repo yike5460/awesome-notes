@@ -1,0 +1,33 @@
+{
+  "name": "amazon-nova-video-understanding",
+  "version": "1.0.0",
+  "description": "Quick start guide for Amazon Nova video understanding features",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "test:simple": "ts-node src/examples/simple-test.ts",
+    "example:local-video": "ts-node src/examples/local-video-example.ts",
+    "example:s3-video": "ts-node src/examples/s3-video-example.ts",
+    "example:multiple-videos": "ts-node src/examples/multiple-videos-example.ts",
+    "example:bounding-box": "ts-node src/examples/bounding-box-example.ts"
+  },
+  "keywords": [
+    "aws",
+    "amazon-nova",
+    "video-understanding",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.400.0",
+    "canvas": "^3.1.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
